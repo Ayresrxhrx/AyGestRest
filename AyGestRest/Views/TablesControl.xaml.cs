@@ -26,7 +26,6 @@ namespace AyGestRest.Views
             TablesCanvas.LayoutTransform = _scaleTransform;
             Loaded += TablesControl_Loaded;
             Unloaded += TablesControl_Unloaded;
-            AppEvents.SpecificTableStatusChanged += OnSpecificTableStatusChanged;
         }
 
         private void TablesControl_Unloaded(object sender, RoutedEventArgs e)
@@ -54,6 +53,8 @@ namespace AyGestRest.Views
 
         private async void TablesControl_Loaded(object sender, RoutedEventArgs e)
         {
+            AppEvents.SpecificTableStatusChanged -= OnSpecificTableStatusChanged;
+            AppEvents.SpecificTableStatusChanged += OnSpecificTableStatusChanged;
             await CarregarMesas();
         }
 
@@ -66,7 +67,6 @@ namespace AyGestRest.Views
         private void DrawTables()
         {
             TablesCanvas.Children.Clear();
-
             foreach (var table in _tables)
             {
                 var border = new Border
@@ -77,33 +77,13 @@ namespace AyGestRest.Views
                     Background = GetStatusBrush(table.Status),
                     BorderBrush = table.Selecionado ? Brushes.Gold : Brushes.WhiteSmoke,
                     BorderThickness = new Thickness(table.Selecionado ? 5 : 2),
-                    Cursor = chkModoEdicao.IsChecked == true ? Cursors.Hand : Cursors.Hand,
+                    Cursor = Cursors.Hand,
                     Tag = table
                 };
 
-                var stack = new StackPanel
-                {
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-
-                stack.Children.Add(new TextBlock
-                {
-                    Text = table.Number,
-                    Foreground = Brushes.White,
-                    FontSize = 20,
-                    FontWeight = FontWeights.Bold,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                });
-
-                stack.Children.Add(new TextBlock
-                {
-                    Text = $"({table.Capacity} pessoas)",
-                    Foreground = Brushes.WhiteSmoke,
-                    FontSize = 14,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                });
-
+                var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+                stack.Children.Add(new TextBlock { Text = table.Number, Foreground = Brushes.White, FontSize = 20, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center });
+                stack.Children.Add(new TextBlock { Text = $"({table.Capacity} pessoas)", Foreground = Brushes.WhiteSmoke, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center });
                 border.Child = stack;
 
                 var tooltipStack = new StackPanel { Margin = new Thickness(10) };
@@ -117,41 +97,32 @@ namespace AyGestRest.Views
 
                 border.MouseLeftButtonUp += Mesa_MouseLeftButtonUp;
                 border.MouseRightButtonUp += Mesa_MouseRightButtonUp;
-
                 Canvas.SetLeft(border, table.PositionX);
                 Canvas.SetTop(border, table.PositionY);
                 TablesCanvas.Children.Add(border);
             }
         }
 
-        private Brush GetStatusBrush(TableStatus status)
+        private Brush GetStatusBrush(TableStatus status) => status switch
         {
-            return status switch
-            {
-                TableStatus.Livre => Brushes.Gray,
-                TableStatus.Ocupada => Brushes.Green,
-                TableStatus.Reservada => Brushes.Orange,
-                TableStatus.Pendente => Brushes.Yellow,
-                _ => Brushes.Gray
-            };
-        }
+            TableStatus.Livre => Brushes.Gray,
+            TableStatus.Ocupada => Brushes.Green,
+            TableStatus.Reservada => Brushes.Orange,
+            TableStatus.Pendente => Brushes.Yellow,
+            _ => Brushes.Gray
+        };
 
         private void Mesa_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (sender is not FrameworkElement element || element.Tag is not RestaurantTable table) return;
-
-            if (Keyboard.Modifiers == ModifierKeys.Control)
-                table.Selecionado = !table.Selecionado;
+            if (Keyboard.Modifiers == ModifierKeys.Control) table.Selecionado = !table.Selecionado;
             else
             {
                 foreach (var t in _tables) t.Selecionado = false;
                 table.Selecionado = true;
             }
-
             DrawTables();
-
-            // Para mesa ocupada, o POS recebe a mesma mesa e deve carregar a venda aberta existente.
-            // Para mesa livre, o fluxo normal cria/abre uma nova venda no Desktop.
+            // O POS recebe a mesa. Se estiver ocupada, o POS deve carregar a venda aberta; se livre, abre nova venda.
             OnOpenTableCommand?.Invoke(this, table);
         }
 
@@ -159,21 +130,17 @@ namespace AyGestRest.Views
         {
             e.Handled = true;
             if (chkModoEdicao.IsChecked != true) return;
-
             if (sender is FrameworkElement element && element.Tag is RestaurantTable table)
             {
                 var menu = new ContextMenu();
                 var editar = new MenuItem { Header = "Editar Mesa" };
                 editar.Click += (_, __) => EditarMesa(table);
                 menu.Items.Add(editar);
-
                 var excluir = new MenuItem { Header = "Excluir Mesa" };
                 excluir.Click += async (_, __) => await ExcluirMesa(table);
                 menu.Items.Add(excluir);
                 menu.Items.Add(new Separator());
-
-                var statuses = new[] { "Livre", "Ocupada", "Reservada", "Pendente" };
-                foreach (var s in statuses)
+                foreach (var s in new[] { "Livre", "Ocupada", "Reservada", "Pendente" })
                 {
                     var item = new MenuItem { Header = s };
                     item.Click += async (_, __) => await MudarStatus(table, s);
@@ -236,10 +203,8 @@ namespace AyGestRest.Views
         {
             if (!_isDragging || _draggingElement == null) return;
             var pos = e.GetPosition(TablesCanvas);
-            var dx = pos.X - _dragStartPosition.X;
-            var dy = pos.Y - _dragStartPosition.Y;
-            Canvas.SetLeft(_draggingElement, Canvas.GetLeft(_draggingElement) + dx);
-            Canvas.SetTop(_draggingElement, Canvas.GetTop(_draggingElement) + dy);
+            Canvas.SetLeft(_draggingElement, Canvas.GetLeft(_draggingElement) + pos.X - _dragStartPosition.X);
+            Canvas.SetTop(_draggingElement, Canvas.GetTop(_draggingElement) + pos.Y - _dragStartPosition.Y);
             _dragStartPosition = pos;
         }
 
@@ -267,10 +232,7 @@ namespace AyGestRest.Views
 
         private async void BtnOrganizar_Click(object sender, RoutedEventArgs e)
         {
-            const int cols = 4;
-            const int spacing = 150;
-            const int x = 50;
-            const int y = 50;
+            const int cols = 4, spacing = 150, x = 50, y = 50;
             int count = 0;
             foreach (var table in _tables)
             {
@@ -293,17 +255,7 @@ namespace AyGestRest.Views
                     MessageBox.Show("Número e capacidade são obrigatórios!", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                var newTable = new RestaurantTable
-                {
-                    Number = num,
-                    Capacity = cap,
-                    Notes = notas,
-                    PositionX = pos.X,
-                    PositionY = pos.Y,
-                    Status = TableStatus.Livre,
-                    Selecionado = false
-                };
-                _db.Tables.Add(newTable);
+                _db.Tables.Add(new RestaurantTable { Number = num, Capacity = cap, Notes = notas, PositionX = pos.X, PositionY = pos.Y, Status = TableStatus.Livre, Selecionado = false });
                 await _db.SaveChangesAsync();
                 await CarregarMesas();
             });
@@ -312,34 +264,19 @@ namespace AyGestRest.Views
 
         private Window CriarJanelaCadastro(string numAtual, string capAtual, string notasAtual, Action<string, string, string> onSave)
         {
-            var window = new Window
-            {
-                Title = string.IsNullOrEmpty(numAtual) ? "Cadastrar Mesa" : "Editar Mesa",
-                Width = 350,
-                Height = 400,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = Window.GetWindow(this)
-            };
-
+            var window = new Window { Title = string.IsNullOrEmpty(numAtual) ? "Cadastrar Mesa" : "Editar Mesa", Width = 350, Height = 400, WindowStartupLocation = WindowStartupLocation.CenterOwner, Owner = Window.GetWindow(this) };
             var stack = new StackPanel { Margin = new Thickness(20) };
             stack.Children.Add(new TextBlock { Text = "Número da Mesa:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
             stack.Children.Add(new TextBox { Text = numAtual, Margin = new Thickness(0, 0, 0, 15) });
             var txtNum = (TextBox)stack.Children[^1];
-
             stack.Children.Add(new TextBlock { Text = "Capacidade:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
             stack.Children.Add(new TextBox { Text = capAtual, Margin = new Thickness(0, 0, 0, 15) });
             var txtCap = (TextBox)stack.Children[^1];
-
             stack.Children.Add(new TextBlock { Text = "Notas:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
             stack.Children.Add(new TextBox { Text = notasAtual, Height = 100, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 0, 0, 15) });
             var txtNotas = (TextBox)stack.Children[^1];
-
             var btnSave = new Button { Content = "Salvar", Height = 40, Margin = new Thickness(0, 20, 0, 0) };
-            btnSave.Click += (_, __) =>
-            {
-                onSave(txtNum.Text.Trim(), txtCap.Text.Trim(), txtNotas.Text.Trim());
-                window.Close();
-            };
+            btnSave.Click += (_, __) => { onSave(txtNum.Text.Trim(), txtCap.Text.Trim(), txtNotas.Text.Trim()); window.Close(); };
             stack.Children.Add(btnSave);
             window.Content = new ScrollViewer { Content = stack };
             return window;
