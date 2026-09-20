@@ -2,20 +2,20 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
+using AyGestRest.Services;
 
 namespace AyGestRest
 {
     public partial class App
     {
         private EmbeddedApiServer? _mobileApiServer;
+        private TableSaleStateCoordinator? _tableSaleStateCoordinator;
 
         private void OnApplicationStartup(object sender, StartupEventArgs e)
         {
             try
             {
-                Dispatcher.BeginInvoke(
-                    new Action(StartMobileApi),
-                    DispatcherPriority.ApplicationIdle);
+                Dispatcher.BeginInvoke(new Action(StartMobileApi), DispatcherPriority.ApplicationIdle);
             }
             catch (Exception ex)
             {
@@ -25,11 +25,11 @@ namespace AyGestRest
 
         private void StartMobileApi()
         {
-            if (_mobileApiServer != null)
-                return;
+            if (_mobileApiServer != null) return;
 
             try
             {
+                _tableSaleStateCoordinator ??= new TableSaleStateCoordinator();
                 _mobileApiServer = new EmbeddedApiServer("5050");
                 _mobileApiServer.Start();
                 Debug.WriteLine("[Mobile API] servidor iniciado após inicialização da aplicação.");
@@ -46,6 +46,8 @@ namespace AyGestRest
             {
                 _mobileApiServer?.Dispose();
                 _mobileApiServer = null;
+                _tableSaleStateCoordinator?.Dispose();
+                _tableSaleStateCoordinator = null;
             }
             catch (Exception ex)
             {
