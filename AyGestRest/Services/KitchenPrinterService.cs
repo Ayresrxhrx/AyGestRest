@@ -11,7 +11,13 @@ namespace AyGestRest.Services
 {
     public static class KitchenPrinterService
     {
-        public static async Task<KitchenPrintResult> TryPrintOrderAsync(Order order, RestaurantConfig config)
+        public static Task<KitchenPrintResult> TryPrintOrderAsync(Order order, RestaurantConfig config)
+            => TryPrintItemsAsync(order, config, order?.Items ?? Enumerable.Empty<OrderItem>());
+
+        public static async Task<KitchenPrintResult> TryPrintItemsAsync(
+            Order order,
+            RestaurantConfig config,
+            IEnumerable<OrderItem> orderItems)
         {
             if (order == null)
                 return KitchenPrintResult.Skipped("Pedido inválido.");
@@ -29,7 +35,7 @@ namespace AyGestRest.Services
                 return KitchenPrintResult.Skipped($"A impressora de cozinha '{printerName}' não está instalada/disponível.");
             }
 
-            var kitchenItems = order.Items
+            var kitchenItems = orderItems
                 .Where(i => i.Product?.PrintToKitchen == true || i.Product == null)
                 .ToList();
 
@@ -90,8 +96,7 @@ namespace AyGestRest.Services
 
                     if (!string.IsNullOrWhiteSpace(item.Notes))
                     {
-                        var notes = "Obs: " + item.Notes.Trim();
-                        foreach (var line in Wrap(notes, 52))
+                        foreach (var line in Wrap("Obs: " + item.Notes.Trim(), 52))
                         {
                             e.Graphics.DrawString(line, bodyFont, Brushes.Black, 20, y);
                             y += 17;
