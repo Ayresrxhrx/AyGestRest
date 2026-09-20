@@ -1,0 +1,47 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build
+[Bb]in/
+[Oo]bj/
+
+# NuGet
+packages/
+
+# Rider / JetBrains
+.idea/
+
+# Logs
+*.log
+
+# Publish
+publish/
+*.pubxml.user
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Local databases / runtime data
+*.db-shm
+*.db-wal
+
+# Certificates / keys
+*.pfx
+*.p12
+
+# Sensitive configuration
+appsettings.local.json
