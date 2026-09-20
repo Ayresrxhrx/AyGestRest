@@ -14,19 +14,19 @@ namespace AyGestRest.Services
         public static async Task<KitchenPrintResult> TryPrintOrderAsync(Order order, RestaurantConfig config)
         {
             if (order == null)
-                return KitchenPrintResult.NotPrinted("Pedido inválido.");
+                return KitchenPrintResult.Skipped("Pedido inválido.");
 
             if (config?.PrintOrderToKitchen != true)
-                return KitchenPrintResult.NotPrinted("Impressão de cozinha desactivada.");
+                return KitchenPrintResult.Skipped("Impressão de cozinha desactivada.");
 
             var printerName = config.KitchenPrinterName?.Trim();
             if (string.IsNullOrWhiteSpace(printerName))
-                return KitchenPrintResult.NotPrinted("Nenhuma impressora de cozinha configurada.");
+                return KitchenPrintResult.Skipped("Nenhuma impressora de cozinha configurada.");
 
             if (!PrinterSettings.InstalledPrinters.Cast<string>()
                     .Any(p => string.Equals(p, printerName, StringComparison.OrdinalIgnoreCase)))
             {
-                return KitchenPrintResult.NotPrinted($"A impressora de cozinha '{printerName}' não está instalada/disponível.");
+                return KitchenPrintResult.Skipped($"A impressora de cozinha '{printerName}' não está instalada/disponível.");
             }
 
             var kitchenItems = order.Items
@@ -34,17 +34,17 @@ namespace AyGestRest.Services
                 .ToList();
 
             if (kitchenItems.Count == 0)
-                return KitchenPrintResult.NotPrinted("O pedido não possui itens destinados à cozinha.");
+                return KitchenPrintResult.Skipped("O pedido não possui itens destinados à cozinha.");
 
             try
             {
                 await Task.Run(() => Print(printerName, order, kitchenItems, config.CopiesCount));
-                return KitchenPrintResult.Printed(printerName);
+                return KitchenPrintResult.Success(printerName);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao imprimir pedido Mobile na cozinha: {ex}");
-                return KitchenPrintResult.NotPrinted($"Falha na impressão: {ex.Message}");
+                return KitchenPrintResult.Skipped($"Falha na impressão: {ex.Message}");
             }
         }
 
@@ -138,7 +138,7 @@ namespace AyGestRest.Services
 
     public sealed record KitchenPrintResult(bool Printed, string Message, string? PrinterName)
     {
-        public static KitchenPrintResult Printed(string printerName) => new(true, "Pedido enviado para a impressora da cozinha.", printerName);
-        public static KitchenPrintResult NotPrinted(string message) => new(false, message, null);
+        public static KitchenPrintResult Success(string printerName) => new(true, "Pedido enviado para a impressora da cozinha.", printerName);
+        public static KitchenPrintResult Skipped(string message) => new(false, message, null);
     }
 }
