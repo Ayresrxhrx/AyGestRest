@@ -1,0 +1,28 @@
+﻿<Window x:Class="AyGestRest.Views.IngredientPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Selecionar Ingrediente" Height="200" Width="350"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Ingrediente:"/>
+            <ComboBox x:Name="cmbIngredients" DisplayMemberPath="Name" SelectedValuePath="Id"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Quantidade:"/>
+            <TextBox x:Name="txtQuantity"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancelar" Width="80" Margin="5" Click="BtnCancel_Click"/>
+            <Button Content="OK" Width="80" Margin="5" Click="BtnOk_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

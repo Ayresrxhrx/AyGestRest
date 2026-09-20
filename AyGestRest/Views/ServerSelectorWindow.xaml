@@ -1,0 +1,257 @@
+﻿<Window x:Class="AyGestRest.Views.ServerSelectorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Selecionar Servidor - AyGestRest"
+        Height="550" Width="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#f8fafc"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#0F172A"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="BorderGrayBrush" Color="#E2E8F0"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="24">
+            <StackPanel>
+                <TextBlock Text="🔍 Selecione um Servidor" 
+                           Foreground="White" 
+                           FontSize="24" 
+                           FontWeight="Bold"/>
+                <TextBlock Text="Escolha um servidor automático ou conecte manualmente" 
+                           Foreground="#94A3B8" 
+                           FontSize="14" 
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Conteúdo -->
+        <Grid Grid.Row="1" Margin="24">
+            <TabControl>
+                <!-- Tab 1: Descoberta Automática -->
+                <TabItem Header="🔍 Descoberta Automática">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+                            <Button Content="🔄 Procurar Servidores" 
+                                    Click="RefreshServers_Click"
+                                    Background="{StaticResource SecondaryBrush}"
+                                    Foreground="White"
+                                    Padding="20,10"
+                                    BorderThickness="0"
+                                    Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                            <TextBlock Text="{Binding ServersCount, StringFormat='  {0} servidor(es) encontrado(s)'}" 
+                                       VerticalAlignment="Center"
+                                       Foreground="#64748B"
+                                       Margin="16,0,0,0"/>
+                        </StackPanel>
+
+                        <ListView Grid.Row="1" 
+                                  x:Name="ServersListView"
+                                  ItemsSource="{Binding DiscoveredServers}"
+                                  SelectedItem="{Binding SelectedServer}"
+                                  BorderThickness="1"
+                                  BorderBrush="{StaticResource BorderGrayBrush}"
+                                  Background="White"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="16" BorderBrush="{StaticResource BorderGrayBrush}" BorderThickness="0,0,0,1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" Text="🖥️" FontSize="28" Margin="0,0,16,0"/>
+
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding MachineName}" 
+                                                           FontSize="16" 
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding IpAddress}" 
+                                                           FontSize="13" 
+                                                           Foreground="#64748B"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" 
+                                                       Text="{Binding LastSeen, StringFormat='Visto às {0:HH:mm}'}"
+                                                       FontSize="12"
+                                                       Foreground="#94A3B8"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+
+                <!-- Tab 2: Conexão Manual -->
+                <TabItem Header="🔧 Conexão Manual">
+                    <Grid Margin="32">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                            <TextBlock Text="Endereço IP do Servidor:" 
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,8"/>
+                            <TextBox x:Name="ManualIpTextBox" 
+                                     Text="{Binding ManualIpAddress, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="44"
+                                     Padding="14,12"
+                                     FontSize="14"
+                                     BorderBrush="{StaticResource BorderGrayBrush}"
+                                     BorderThickness="2"
+                                     Background="White">
+                                <TextBox.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </TextBox.Resources>
+                            </TextBox>
+                            <TextBlock Text="Ex: 192.168.1.100" 
+                                       FontSize="12"
+                                       Foreground="#94A3B8"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                            <TextBlock Text="Porta:" 
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,8"/>
+                            <TextBox x:Name="ManualPortTextBox" 
+                                     Text="{Binding ManualPort, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="44"
+                                     Padding="14,12"
+                                     FontSize="14"
+                                     BorderBrush="{StaticResource BorderGrayBrush}"
+                                     BorderThickness="2"
+                                     Background="White"
+                                     Width="120"
+                                     HorizontalAlignment="Left">
+                                <TextBox.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </TextBox.Resources>
+                            </TextBox>
+                            <TextBlock Text="Porta padrão: 5050" 
+                                       FontSize="12"
+                                       Foreground="#94A3B8"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <Button Grid.Row="2" 
+                                Content="🔌 Testar Conexão" 
+                                Click="TestManualConnection_Click"
+                                Background="{StaticResource SecondaryBrush}"
+                                Foreground="White"
+                                Padding="20,12"
+                                BorderThickness="0"
+                                HorizontalAlignment="Left"
+                                Cursor="Hand"
+                                IsEnabled="{Binding CanTestManualConnection}">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <!-- Renomeado de ManualConnectionStatus para ManualConnectionStatusText -->
+                        <TextBlock Grid.Row="3" 
+                                   x:Name="ManualConnectionStatusText"
+                                   Text="{Binding ManualConnectionStatus}"
+                                   Foreground="{Binding ManualConnectionStatusColor}"
+                                   Margin="0,16,0,0"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <!-- Rodapé -->
+        <Border Grid.Row="2" 
+                Background="White" 
+                Padding="24"
+                BorderBrush="{StaticResource BorderGrayBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="{Binding StatusMessage}"
+                           Foreground="#64748B"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1" 
+                        Content="Cancelar"
+                        Click="Cancel_Click"
+                        Background="Transparent"
+                        Foreground="#64748B"
+                        BorderBrush="{StaticResource BorderGrayBrush}"
+                        BorderThickness="2"
+                        Padding="30,10"
+                        Margin="0,0,12,0"
+                        Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button Grid.Column="2" 
+                        Content="Conectar"
+                        x:Name="ConnectButton"
+                        Click="Connect_Click"
+                        Background="{StaticResource SuccessBrush}"
+                        Foreground="White"
+                        Padding="30,10"
+                        BorderThickness="0"
+                        IsEnabled="{Binding CanConnect}"
+                        IsDefault="True"
+                        Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

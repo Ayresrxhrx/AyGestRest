@@ -1,0 +1,327 @@
+﻿<Window x:Class="AyGestRest.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Atualização do Sistema" 
+        Height="450" 
+        Width="600" 
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="White"
+        WindowStyle="SingleBorderWindow"
+        FontFamily="Segoe UI"
+      >
+
+    <Window.Resources>
+        <!-- Cores modernas -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#4361EE"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#FF9800"/>
+        <SolidColorBrush x:Key="ErrorColor" Color="#F44336"/>
+        <SolidColorBrush x:Key="LightBackground" Color="#F8F9FA"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E9ECEF"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#212529"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6C757D"/>
+
+        <!-- Estilo dos botões -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3A56D4"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2F4BC2"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#E9ECEF"/>
+                                <Setter Property="Foreground" Value="#ADB5BD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource LightBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <!-- Estilo dos cartões -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="20" 
+                                      Opacity="0.1" 
+                                      ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Animação do progresso -->
+        <Storyboard x:Key="ProgressAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                             From="0" To="360" Duration="0:0:1"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Grid Margin="0">
+        <!-- Layout principal -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource LightBackground}"
+                Padding="30,20">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Ícone -->
+                    <Border Grid.Column="0" 
+                            Width="48" 
+                            Height="48" 
+                            CornerRadius="12"
+                            Background="{StaticResource PrimaryColor}"
+                            Margin="0,0,15,0">
+                        <TextBlock Text="🔄" 
+                                   FontSize="24"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Texto -->
+                    <StackPanel Grid.Column="1" 
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Atualização Disponível" 
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"/>
+                        <TextBlock Text="Uma nova versão do AyGestRest está disponível"
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Conteúdo principal -->
+        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="30">
+            <StackPanel>
+                <!-- Card de informações -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <!-- Cabeçalho do card -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="O que há de novo"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Versão disponível"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondary}"/>
+                            </StackPanel>
+
+                            <Border Grid.Column="1" 
+                                    Background="{StaticResource PrimaryColor}"
+                                    CornerRadius="6"
+                                    Padding="10,4">
+                                <TextBlock x:Name="txtVersion"
+                                           Text="v1.4.0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Release notes -->
+                        <Border Background="{StaticResource LightBackground}"
+                                CornerRadius="8"
+                                Padding="15"
+                                Margin="0,0,0,20">
+                            <ScrollViewer MaxHeight="150"
+                                          VerticalScrollBarVisibility="Auto">
+                                <TextBlock x:Name="txtReleaseNotes"
+                                           Text="Carregando..."
+                                           FontSize="13"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           TextWrapping="Wrap"/>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Dicas -->
+                        <Border BorderThickness="1,0,0,0"
+                                BorderBrush="{StaticResource PrimaryColor}"
+                                Padding="15,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="📋 Antes de atualizar:"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           Margin="0,0,0,5"/>
+                                <StackPanel Margin="15,0,0,0">
+                                    <TextBlock Text="• O sistema será fechado automaticamente"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="• O instalador será executado em modo silencioso"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="• Seus dados serão mantidos intactos"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Área de status -->
+                <Border x:Name="statusCard"
+                        Style="{StaticResource CardStyle}"
+                        Margin="0,15,0,0"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Ícone animado -->
+                            <Border x:Name="statusIcon"
+                                    Grid.Column="0"
+                                    Width="36"
+                                    Height="36"
+                                    CornerRadius="18"
+                                    Background="{StaticResource LightBackground}"
+                                    Margin="0,0,15,0">
+                                <TextBlock x:Name="txtStatusIcon"
+                                           Text="⏳"
+                                           FontSize="16"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Texto de status -->
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="txtStatus"
+                                           Text="Verificando atualizações..."
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock x:Name="txtStatusDetails"
+                                           Text="Aguarde um momento"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Barra de progresso -->
+                        <Grid x:Name="progressGrid"
+                              Margin="0,15,0,0"
+                              Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ProgressBar x:Name="progressBar"
+                                         Grid.Row="0"
+                                         Height="6"
+                                         Foreground="{StaticResource PrimaryColor}"
+                                         IsIndeterminate="True"/>
+
+                            <TextBlock x:Name="txtProgress"
+                                       Grid.Row="1"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextSecondary}"
+                                       Margin="0,5,0,0"
+                                       HorizontalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Rodapé com botões -->
+        <Border Grid.Row="2" 
+                BorderThickness="0,1,0,0"
+                BorderBrush="{StaticResource BorderColor}"
+                Background="White"
+                Padding="30,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Checkbox para lembrar -->
+                <CheckBox x:Name="chkSkipUpdate"
+                          Grid.Column="0"
+                          Content="Lembrar minha escolha"
+                          VerticalAlignment="Center"
+                          FontSize="12"
+                          IsChecked="True"
+                          Foreground="{StaticResource TextSecondary}"/>
+
+                <!-- Botões -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button x:Name="btnLater"
+                            Content="Depois"
+                            Style="{StaticResource SecondaryButton}"
+                            Width="120"
+                            Margin="0,0,10,0"
+                            Click="btnLater_Click"/>
+
+                    <Button x:Name="btnUpdate"
+                            Content="Atualizar Agora"
+                            Style="{StaticResource PrimaryButton}"
+                            Width="140"
+                            Click="btnUpdate_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

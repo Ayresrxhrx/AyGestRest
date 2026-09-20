@@ -1,0 +1,1915 @@
+﻿<UserControl x:Class="AyGestRest.Views.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.microsoft.com/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ >
+    <UserControl.Resources>
+        <!-- Colors -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#2c3e50"/>
+        <SolidColorBrush x:Key="SecondaryColor" Color="#3498db"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#27ae60"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#f39c12"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#e74c3c"/>
+        <SolidColorBrush x:Key="LightGray" Color="#ecf0f1"/>
+        <SolidColorBrush x:Key="DarkGray" Color="#95a5a6"/>
+        <SolidColorBrush x:Key="BorderGray" Color="#bdc3c7"/>
+        <!-- TextBlock Styles -->
+        <Style TargetType="TextBlock" x:Key="SectionHeaderStyle">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,20,0,10"/>
+            <Setter Property="Foreground" Value="#2c3e50"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="SettingLabelStyle">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="MinWidth" Value="150"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox" x:Key="InputFieldStyle">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderGray}"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <!-- ESTILOS CORRIGIDOS -->
+        <Style x:Key="InfoTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,8"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- PasswordBox Style -->
+        <Style TargetType="PasswordBox" x:Key="PasswordFieldStyle">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderGray}"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <!-- ComboBox Style -->
+        <Style TargetType="ComboBox" x:Key="ComboBoxStyle">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderGray}"/>
+        </Style>
+        <!-- Button Style -->
+        <Style TargetType="Button" x:Key="ActionButtonStyle">
+            <Setter Property="Width" Value="160"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <!-- Validation Error Style -->
+        <Style x:Key="ErrorTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource DangerColor}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid Background="#f8f9fa">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryColor}" Padding="25,20">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="⚙️" FontSize="28" Margin="0,0,15,0"/>
+                <TextBlock Text="Configurações do Sistema"
+                          Foreground="White"
+                          FontSize="26"
+                          FontWeight="Bold"
+                          VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" Margin="20" BorderThickness="0" Background="Transparent">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Grid>
+                                    <Border Name="Border"
+                                           Background="{StaticResource LightGray}"
+                                           BorderThickness="1,1,1,0"
+                                           BorderBrush="#ddd"
+                                           CornerRadius="8,8,0,0"
+                                           Margin="2,0,2,0"
+                                           Padding="20,12">
+                                        <ContentPresenter x:Name="ContentSite"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalAlignment="Center"
+                                                        ContentSource="Header"
+                                                        TextBlock.FontWeight="Medium"
+                                                        TextBlock.FontSize="14"/>
+                                    </Border>
+                                    <Border Name="SelectionIndicator"
+                                           Background="{StaticResource PrimaryColor}"
+                                           Height="4"
+                                           VerticalAlignment="Bottom"
+                                           CornerRadius="2"
+                                           Visibility="Collapsed"/>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="White"/>
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                                        <Setter TargetName="Border" Property="BorderThickness" Value="2,2,2,0"/>
+                                        <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.ItemContainerStyle>
+            <!-- Tab 1: Restaurante -->
+            <TabItem Header="📋 Restaurante">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <Border Background="White"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,0,0,15"
+                    BorderThickness="1"
+                    BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Informações do Restaurante"
+                               Style="{StaticResource SectionHeaderStyle}"/>
+                                <Grid Margin="0,15,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Nome do Restaurante -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                   Text="Nome do Restaurante:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1"
+                                 Text="{Binding Config.RestaurantName, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- NIF -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                   Text="NIF:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1"
+                                 Text="{Binding Config.NIF, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- Endereço -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                   Text="Endereço:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1"
+                                 Text="{Binding Config.Address, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- Telefone -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                   Text="Telefone:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1"
+                                 Text="{Binding Config.Phone, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- Email -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0"
+                                   Text="Email:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1"
+                                 Text="{Binding Config.Email, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- Símbolo da Moeda -->
+                                    <TextBlock Grid.Row="5" Grid.Column="0"
+                                   Text="Símbolo da Moeda:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="5" Grid.Column="1"
+                                 Text="{Binding Config.CurrencySymbol, UpdateSourceTrigger=PropertyChanged}"
+                                 MaxLength="5"
+                                 Width="100"
+                                 Style="{StaticResource InputFieldStyle}"/>
+                                    <!-- Logo do Restaurante -->
+                                    <TextBlock Grid.Row="6" Grid.Column="0"
+                                   Text="Logo do Restaurante:"
+                                   Style="{StaticResource SettingLabelStyle}"
+                                   VerticalAlignment="Top"
+                                   Margin="0,10,0,0"/>
+                                    <StackPanel Grid.Row="6" Grid.Column="1"
+                                    Margin="0,10,0,0"
+                                    >
+                                        <!-- Preview da imagem -->
+                                        <Border Background="#f5f5f5"
+                                    BorderBrush="{StaticResource BorderGray}"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    Width="280"
+                                    Height="160"
+                                    HorizontalAlignment="Left">
+                                            <Image x:Name="LogoPreviewImage"
+                                       Stretch="UniformToFill"/>
+                                        </Border>
+                                        <!-- Linha com caminho + botão procurar -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Grid.Column="0"
+                                         Text="{Binding Config.LogoPath, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputFieldStyle}"
+                                         IsReadOnly="True"
+                                         Margin="0,0,10,0"/>
+                                            <Button Grid.Column="1"
+                                        Content="Procurar..."
+                                        Width="110"
+                                        Height="35"
+                                        Background="{StaticResource SecondaryColor}"
+                                        Foreground="White"
+                                        FontWeight="SemiBold"
+                                        Click="BrowseLogo_Click"/>
+                                        </Grid>
+                                        <!-- Botão remover logo -->
+                                        <Button Content="🗑️ Remover Logo"
+                                    Width="140"
+                                    Height="35"
+                                    Background="{StaticResource DangerColor}"
+                                    Foreground="White"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Left"
+                                    Click="RemoveLogo_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- Tab 2: Segurança -->
+            <TabItem Header="🔒 Segurança">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <!-- CONFIGURAÇÕES DE ACESSO -->
+                        <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,15"
+                    BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Configurações de Acesso"
+                               Style="{StaticResource SectionHeaderStyle}"/>
+                                <Grid Margin="0,5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Requer Login:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="RequiresLoginYes"
+                                         GroupName="RequiresLogin"
+                                         Content="Sim"
+                                         Margin="0,0,20,0"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="RequiresLoginNo"
+                                         GroupName="RequiresLogin"
+                                         Content="Não"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Timeout (minutos):"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1"
+                                 Text="{Binding Config.InactivityTimeout}"
+                                 Width="120"
+                                 Style="{StaticResource InputFieldStyle}"
+                                 PreviewTextInput="NumberValidationTextBox"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Auto-save:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="AutoSaveYes"
+                                         GroupName="AutoSave"
+                                         Content="Ativado"
+                                         Margin="0,0,20,0"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="AutoSaveNo"
+                                         GroupName="AutoSave"
+                                         Content="Desativado"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <!-- PERMISSÕES DO FUNCIONÁRIO -->
+                        <Border Background="White"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,20,0,0"
+                    BorderThickness="1"
+                    BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Permissões do Funcionário"
+                               Style="{StaticResource SectionHeaderStyle}"/>
+                                <TextBlock Text="Escolha a que áreas o funcionário pode aceder:"
+                               Foreground="#7f8c8d"
+                               Margin="0,0,0,15"/>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="280"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Fecho do Dia -->
+                                    <TextBlock Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="Permitir Fecho do Dia:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <CheckBox Grid.Row="0"
+                                  Grid.Column="1" x:Name="ChkFechoDia"
+                                  IsChecked="{Binding Config.FuncionarioPodeFechoDiario}"
+                                  Content="Funcionário pode aceder ao Fecho do Dia"
+                                  FontSize="15"/>
+                                    <!-- Reservas -->
+                                    <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="Permitir Reservas:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <CheckBox Grid.Row="1"
+                                  Grid.Column="1" x:Name="ChkReservas"
+                                  Content="Funcionário pode gerir Reservas"
+                                  IsChecked="{Binding Config.FuncionarioPodeReservas}"
+                                  FontSize="15"/>
+                                    <!-- Histórico de Vendas -->
+                                    <TextBlock Grid.Row="2"
+                                   Grid.Column="0"
+                                   Text="Permitir Histórico de Vendas:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <CheckBox Grid.Row="2"
+                                  Grid.Column="1" x:Name="ChkHistorico"
+                                  Content="Funcionário pode ver Histórico de Vendas"
+                                  IsChecked="{Binding Config.FuncionarioPodeHistoricoVendas}"
+                                  FontSize="15"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <!-- INTERFACE DO UTILIZADOR -->
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Interface do Utilizador"
+                               Style="{StaticResource SectionHeaderStyle}"/>
+                                <Grid Margin="0,5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Efeitos Sonoros:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="SoundEffectsYes"
+                                         GroupName="SoundEffects"
+                                         Content="Ativados"
+                                         Margin="0,0,20,0"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="SoundEffectsNo"
+                                         GroupName="SoundEffects"
+                                         Content="Desativados"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Modo de Visualização:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="DarkModeNo"
+                                         GroupName="DarkMode"
+                                         Content="Modo Claro"
+                                         Margin="0,0,20,0"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="DarkModeYes"
+                                         GroupName="DarkMode"
+                                         Content="Modo Escuro"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Notificações:"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="ShowNotificationsYes"
+                                         GroupName="ShowNotifications"
+                                         Content="Mostrar"
+                                         Margin="0,0,20,0"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="ShowNotificationsNo"
+                                         GroupName="ShowNotifications"
+                                         Content="Ocultar"
+                                         Checked="BooleanRadioButton_Checked"
+                                         Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- Tab 3: Email -->
+            <TabItem Header="📧 Email">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,15"
+                                BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Configurações de Email"
+                                          Style="{StaticResource SectionHeaderStyle}"/>
+                                <TextBlock Text="Configurações para enviar relatórios, fechos de dia e notificações por email"
+                                          Foreground="#7f8c8d"
+                                          Margin="0,0,0,15"/>
+
+                                <Grid Margin="0,15,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Email de Envio -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                              Text="Email de Envio:"
+                                              Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1">
+                                        <TextBox x:Name="TxtEmail"
+                                                Text="{Binding Config.EmailAddress, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource InputFieldStyle}"
+                                                LostFocus="EmailField_LostFocus"/>
+                                        <TextBlock x:Name="TxtEmailError"
+                                                  Text="Email inválido"
+                                                  Style="{StaticResource ErrorTextBlockStyle}"
+                                                  Visibility="Collapsed"/>
+                                    </StackPanel>
+
+                                    <!-- Senha do Email -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                              Text="Senha do Email:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,15,0,0">
+                                        <PasswordBox x:Name="PwdEmailPassword"
+                                                    PasswordChanged="PasswordBox_PasswordChanged"
+                                                    Style="{StaticResource PasswordFieldStyle}"/>
+                                    </StackPanel>
+
+                                    <!-- Servidor SMTP -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                              Text="Servidor SMTP:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1"
+                                            Text="{Binding Config.SMTPServer, UpdateSourceTrigger=PropertyChanged}"
+                                            Style="{StaticResource InputFieldStyle}"
+                                            Margin="0,15,0,0"/>
+
+                                    <!-- Porta SMTP -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                              Text="Porta SMTP:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1"
+                                            Text="{Binding Config.SMTPPort, UpdateSourceTrigger=PropertyChanged}"
+                                            Style="{StaticResource InputFieldStyle}"
+                                            Margin="0,15,0,0"
+                                            PreviewTextInput="NumberValidationTextBox"/>
+
+                                    <!-- SSL -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0"
+                                              Text="Usar SSL:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,15,0,0">
+                                        <RadioButton x:Name="SSLYes"
+                                                    GroupName="SSL"
+                                                    Content="Sim"
+                                                    Margin="0,0,20,0"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="SSLNo"
+                                                    GroupName="SSL"
+                                                    Content="Não"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+
+                                    <!-- Email Destinatário (para relatórios) -->
+                                    <TextBlock Grid.Row="5" Grid.Column="0"
+                                              Text="Email Destinatário:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,15,0,0">
+                                        <TextBox x:Name="TxtRecipientEmail"
+                                                Text="{Binding Config.RecipientEmail, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{StaticResource InputFieldStyle}"
+                                                LostFocus="EmailField_LostFocus"/>
+                                        <TextBlock x:Name="TxtRecipientEmailError"
+                                                  Text="Email inválido"
+                                                  Style="{StaticResource ErrorTextBlockStyle}"
+                                                  Visibility="Collapsed"/>
+                                    </StackPanel>
+
+                                    <!-- Enviar Fecho do Dia -->
+                                    <TextBlock Grid.Row="6" Grid.Column="0"
+                                              Text="Enviar Fecho do Dia:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" Margin="0,15,0,0">
+                                        <RadioButton x:Name="SendDailyReportYes"
+                                                    GroupName="SendDailyReport"
+                                                    Content="Sim"
+                                                    Margin="0,0,20,0"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="SendDailyReportNo"
+                                                    GroupName="SendDailyReport"
+                                                    Content="Não"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+
+                                    <!-- Enviar Relatórios -->
+                                    <TextBlock Grid.Row="7" Grid.Column="0"
+                                              Text="Enviar Relatórios:"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              Margin="0,15,0,0"/>
+                                    <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,15,0,0">
+                                        <RadioButton x:Name="SendReportsYes"
+                                                    GroupName="SendReports"
+                                                    Content="Sim"
+                                                    Margin="0,0,20,0"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="SendReportsNo"
+                                                    GroupName="SendReports"
+                                                    Content="Não"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                        <!-- No Grid/StackPanel onde está o PasswordBox, adicione: -->
+                                        <TextBlock x:Name="TxtPasswordError" 
+           Foreground="Red" 
+           Visibility="Collapsed" 
+           Margin="0,5,0,0"
+           TextWrapping="Wrap"/>
+
+                                        <TextBlock x:Name="TxtPasswordHelp" 
+           Foreground="Gray" 
+           Visibility="Collapsed" 
+           Margin="0,5,0,0"
+           FontSize="11"
+           TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Testar Configuração -->
+                                <Border BorderBrush="{StaticResource BorderGray}"
+                                       BorderThickness="1"
+                                       CornerRadius="8"
+                                       Padding="20"
+                                       Margin="0,30,0,0"
+                                       Background="#f8f9fa">
+                                    <StackPanel>
+                                        <TextBlock Text="Testar Configuração de Email"
+                                                  FontWeight="Bold"
+                                                  FontSize="16"
+                                                  Foreground="{StaticResource PrimaryColor}"
+                                                  HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Envie um email de teste para verificar se as configurações estão corretas:"
+                                                  Foreground="#7f8c8d"
+                                                  TextWrapping="Wrap"
+                                                  Margin="0,10,0,20"
+                                                  HorizontalAlignment="Center"/>
+
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="📧 Testar Email"
+                                                   Width="180"
+                                                   Height="45"
+                                                   FontWeight="Bold"
+                                                   Background="{StaticResource SecondaryColor}"
+                                                   Foreground="White"
+                                                   Click="TestEmail_Click"
+                                                   Cursor="Hand"/>
+                                            <Button Content="🔄 Validar Configuração"
+                                                   Width="200"
+                                                   Height="45"
+                                                   FontWeight="Bold"
+                                                   Background="{StaticResource WarningColor}"
+                                                   Foreground="White"
+                                                   Click="ValidateEmailConfig_Click"
+                                                   Cursor="Hand"
+                                                   Margin="20,0,0,0"/>
+                                        </StackPanel>
+
+                                        <StackPanel x:Name="TestResultPanel" 
+                                                  Visibility="Collapsed"
+                                                  HorizontalAlignment="Center"
+                                                  Margin="0,20,0,0">
+                                            <TextBlock x:Name="TxtTestResult"
+                                                      FontWeight="Bold"
+                                                      FontSize="14"
+                                                      HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtTestDetails"
+                                                      TextWrapping="Wrap"
+                                                      HorizontalAlignment="Center"
+                                                      Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Informações Importantes -->
+                                <Border BorderBrush="#3498db"
+                                       BorderThickness="1"
+                                       CornerRadius="8"
+                                       Padding="15"
+                                       Margin="0,20,0,0"
+                                       Background="#e8f4fc">
+                                    <StackPanel>
+                                        <TextBlock Text="⚠️ Informações Importantes"
+                                                  FontWeight="Bold"
+                                                  FontSize="14"
+                                                  Foreground="#2980b9"/>
+                                        <TextBlock Text="• Configure um email do Gmail para melhor compatibilidade"
+                                                  Margin="0,8,0,0"/>
+                                        <TextBlock Text="• Para Gmail, use servidor: smtp.gmail.com, porta: 587, SSL: Sim"
+                                                  Margin="0,4,0,0"/>
+                                        <TextBlock Text="• Para Outlook, use servidor: smtp.office365.com, porta: 587, SSL: Sim"
+                                                  Margin="0,4,0,0"/>
+                                        <TextBlock Text="• O email destinatário receberá relatórios e fechos de dia"
+                                                  Margin="0,4,0,0"/>
+                                        <TextBlock Text="• A senha é guardada de forma segura na base de dados"
+                                                  Margin="0,4,0,0"
+                                                  FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- Tab 4: Backup -->
+            <TabItem Header="💾 Backup">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <!-- CONFIGURAÇÕES DE BACKUP AUTOMÁTICO -->
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="#e0e0e0"
+                    Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="Configurações de Backup Automático"
+                              Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <Grid Margin="0,10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" 
+                                  Text="Backup Diário:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" 
+                                   Orientation="Horizontal">
+                                        <RadioButton x:Name="BackupDiarioYes"
+                                       GroupName="BackupDiario"
+                                       Content="Ativado"
+                                       Margin="0,0,20,0"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="BackupDiarioNo"
+                                       GroupName="BackupDiario"
+                                       Content="Desativado"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                                  Text="Auto Backup:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" 
+                                   Orientation="Horizontal">
+                                        <RadioButton x:Name="AutoBackupYes"
+                                       GroupName="AutoBackup"
+                                       Content="Ativado"
+                                       Margin="0,0,20,0"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="AutoBackupNo"
+                                       GroupName="AutoBackup"
+                                       Content="Desativado"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                                  Text="Hora do Backup:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1"
+                                x:Name="TxtBackupTime"
+                                Text="{Binding Config.BackupTime, UpdateSourceTrigger=PropertyChanged}"
+                                Width="120"
+                                Style="{StaticResource InputFieldStyle}"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" 
+                                  Text="Pasta de Backup:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <Grid Grid.Row="3" Grid.Column="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                    x:Name="TxtBackupPath"
+                                    Text="{Binding Config.BackupPath, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource InputFieldStyle}"
+                                    Margin="0,0,10,0"/>
+                                        <Button Grid.Column="1"
+                                   Content="Procurar"
+                                   Width="100"
+                                   Height="35"
+                                   Background="{StaticResource SecondaryColor}"
+                                   Foreground="White"
+                                   FontWeight="SemiBold"
+                                   Click="BrowseBackupFolder_Click"/>
+                                    </Grid>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,20,0,0">
+                                    <Button Content="🔄 Fazer Backup Agora"
+                               Style="{StaticResource ActionButtonStyle}"
+                               Background="{StaticResource SuccessColor}"
+                               Foreground="White"
+                               Click="BackupNow_Click"/>
+                                    <Button Content="📂 Abrir Pasta"
+                               Style="{StaticResource ActionButtonStyle}"
+                               Background="{StaticResource SecondaryColor}"
+                               Foreground="White"
+                               Margin="20,0,0,0"
+                               Click="OpenBackupFolder_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- BACKUP E RESTAURAÇÃO MANUAL -->
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Backup e Restauração Manual"
+                              Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <TextBlock Margin="0,10,0,20" TextWrapping="Wrap"
+                              Foreground="#666666">
+                        Crie cópias de segurança completas do sistema ou restaure de um backup anterior.
+                        O backup inclui: base de dados, logos e configurações.
+                                </TextBlock>
+
+                                <Grid Margin="0,10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Exportar Backup -->
+                                    <Border Grid.Row="0" Grid.Column="0" 
+                               Background="#F5F5F5" 
+                               CornerRadius="6" 
+                               Padding="15"
+                               Margin="0,0,10,0">
+                                        <StackPanel>
+                                            <TextBlock Text="📤 Exportar Backup"
+                                          FontWeight="Bold"
+                                          FontSize="14"
+                                          Margin="0,0,0,10"/>
+                                            <TextBlock Text="Crie um arquivo de backup completo para guardar em local seguro."
+                                          TextWrapping="Wrap"
+                                          Margin="0,0,0,15"
+                                          Foreground="#666666"/>
+                                            <Button Content="Exportar Backup Completo"
+                                       Background="{StaticResource PrimaryColor}"
+                                       Foreground="White"
+                                       FontWeight="SemiBold"
+                                       Height="40"
+                                       Click="ExportBackup_Click"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Restaurar Backup -->
+                                    <Border Grid.Row="0" Grid.Column="1" 
+                               Background="#F5F5F5" 
+                               CornerRadius="6" 
+                               Padding="15">
+                                        <StackPanel>
+                                            <TextBlock Text="📥 Restaurar Backup"
+                                          FontWeight="Bold"
+                                          FontSize="14"
+                                          Margin="0,0,0,10"/>
+                                            <TextBlock Text="Restaure o sistema a partir de um arquivo de backup anterior."
+                                          TextWrapping="Wrap"
+                                          Margin="0,0,0,15"
+                                          Foreground="#666666"/>
+                                            <Button Content="Restaurar do Backup"
+                                       Background="{StaticResource WarningColor}"
+                                       Foreground="White"
+                                       FontWeight="SemiBold"
+                                       Height="40"
+                                       Click="RestoreBackup_Click"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Backup Rápido -->
+                                    <Border Grid.Row="1" Grid.Column="0" 
+                               Grid.ColumnSpan="2"
+                               Background="#FFF3E0" 
+                               CornerRadius="6" 
+                               Padding="15"
+                               Margin="0,15,0,0"
+                               BorderThickness="1"
+                               BorderBrush="#FFB74D">
+                                        <StackPanel>
+                                            <TextBlock Text="⚡ Backup Rápido"
+                                          FontWeight="Bold"
+                                          FontSize="14"
+                                          Margin="0,0,0,5"
+                                          Foreground="#E65100"/>
+                                            <TextBlock Text="Crie backups frequentes sem comprimir (mais rápido)."
+                                          TextWrapping="Wrap"
+                                          Margin="0,0,0,10"
+                                          Foreground="#666666"/>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Content="Backup Rápido (.db)"
+                                           Background="#FF9800"
+                                           Foreground="White"
+                                           FontWeight="SemiBold"
+                                           Height="35"
+                                           Margin="0,0,10,0"
+                                           Click="QuickBackup_Click"/>
+                                                <Button Content="Restaurar Backup Rápido"
+                                           Background="#FF5722"
+                                           Foreground="White"
+                                           FontWeight="SemiBold"
+                                           Height="35"
+                                           Click="QuickRestore_Click"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Lista de Backups -->
+                                    <Border Grid.Row="2" Grid.Column="0" 
+                               Grid.ColumnSpan="2"
+                               Background="#F5F5F5" 
+                               CornerRadius="6" 
+                               Padding="15"
+                               Margin="0,15,0,0">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="📋 Backups Disponíveis"
+                                              FontWeight="Bold"
+                                              FontSize="14"
+                                              VerticalAlignment="Center"/>
+                                                <Button Content="🔄 Atualizar"
+                                           Margin="15,0,0,0"
+                                           Padding="10,5"
+                                           Background="Transparent"
+                                           BorderBrush="#DDD"
+                                           BorderThickness="1"
+                                           Click="RefreshBackupList_Click"/>
+                                            </StackPanel>
+
+                                            <ListView x:Name="LstBackups"
+                                         Height="150"
+                                         Margin="0,10,0,0"
+                                         BorderThickness="1"
+                                         BorderBrush="#DDD">
+                                                <ListView.View>
+                                                    <GridView>
+                                                        <GridViewColumn Header="Nome" Width="200">
+                                                            <GridViewColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="📁" Margin="0,0,5,0"/>
+                                                                        <TextBlock Text="{Binding FileName}" 
+                                                                       VerticalAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </GridViewColumn.CellTemplate>
+                                                        </GridViewColumn>
+                                                        <GridViewColumn Header="Data" Width="120">
+                                                            <GridViewColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Date}" 
+                                                                   VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </GridViewColumn.CellTemplate>
+                                                        </GridViewColumn>
+                                                        <GridViewColumn Header="Tamanho" Width="80">
+                                                            <GridViewColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Size}" 
+                                                                   VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </GridViewColumn.CellTemplate>
+                                                        </GridViewColumn>
+                                                        <GridViewColumn Header="Tipo" Width="100">
+                                                            <GridViewColumn.CellTemplate>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding Type}" 
+                                                                   VerticalAlignment="Center"/>
+                                                                </DataTemplate>
+                                                            </GridViewColumn.CellTemplate>
+                                                        </GridViewColumn>
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+
+                                            <StackPanel Orientation="Horizontal" 
+                                           HorizontalAlignment="Right"
+                                           Margin="0,10,0,0">
+                                                <Button Content="🔍 Ver Detalhes"
+                                           Padding="10,5"
+                                           Click="ViewBackupDetails_Click"/>
+                                                <Button Content="🗑️ Excluir"
+                                           Padding="10,5"
+                                           Margin="10,0,0,0"
+                                           Background="#F44336"
+                                           Foreground="White"
+                                           Click="DeleteBackup_Click"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Painel de Resultado -->
+                                <Border x:Name="BackupResultPanel"
+                           Visibility="Collapsed"
+                           Background="#E8F5E9"
+                           BorderBrush="#A5D6A7"
+                           BorderThickness="1"
+                           CornerRadius="4"
+                           Padding="15"
+                           Margin="0,20,0,0">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock x:Name="TxtBackupResultIcon"
+                                          FontSize="20"
+                                          Margin="0,0,10,0"/>
+                                            <TextBlock x:Name="TxtBackupResult"
+                                          FontWeight="Bold"
+                                          FontSize="14"
+                                          VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="TxtBackupDetails"
+                                      Margin="0,10,0,0"
+                                      TextWrapping="Wrap"/>
+
+                                        <ProgressBar x:Name="BackupProgressBar"
+                                        Height="6"
+                                        Margin="0,10,0,0"
+                                        Visibility="Collapsed"/>
+
+                                        <Button x:Name="BtnBackupAction"
+                                   Content="Abrir Pasta"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,10,0,0"
+                                   Padding="15,5"
+                                   Background="{StaticResource SecondaryColor}"
+                                   Foreground="White"
+                                   Click="OpenBackupFolder_Click"
+                                   Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- INFORMAÇÕES DO SISTEMA -->
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="#e0e0e0"
+                    Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="ℹ️ Informações do Sistema"
+                              Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <Grid Margin="0,10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" 
+                                  Text="Pasta de Dados:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" 
+                                  x:Name="TxtDataPath"
+                                  Style="{StaticResource InfoTextStyle}"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" 
+                                  Text="Tamanho do Banco:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" 
+                                  x:Name="TxtDatabaseSize"
+                                  Style="{StaticResource InfoTextStyle}"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" 
+                                  Text="Último Backup:"
+                                  Style="{StaticResource SettingLabelStyle}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" 
+                                  x:Name="TxtLastBackup"
+                                  Style="{StaticResource InfoTextStyle}"/>
+                                </Grid>
+
+                                <Button Content="Atualizar Informações"
+                           HorizontalAlignment="Left"
+                           Margin="0,10,0,0"
+                           Padding="10,5"
+                           Click="RefreshSystemInfo_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- Tab 5: Impressoras -->
+            <TabItem Header="🖨️ Impressão">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                    BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Configurações de Impressão"
+                              Style="{StaticResource SectionHeaderStyle}"/>
+
+                                <Grid Margin="0,10,0,5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Impressora de Talões -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Impressora de Talões:"
+                                  Style="{StaticResource SettingLabelStyle}"
+                                  ToolTip="Impressora principal para impressão de talões"/>
+                                    <ComboBox Grid.Row="0" Grid.Column="1"
+                                 ItemsSource="{Binding AvailablePrinters}"
+                                 SelectedItem="{Binding Config.PrinterName}"
+                                 Style="{StaticResource ComboBoxStyle}"
+                                 ToolTip="Selecione a impressora para talões"/>
+                                    <Button Grid.Row="0" Grid.Column="2"
+                               Content="Testar"
+                               Width="80"
+                               Height="35"
+                               Margin="10,0,0,0"
+                               Background="{StaticResource SecondaryColor}"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="TestMainPrinter_Click"
+                               ToolTip="Testar a impressora selecionada"/>
+
+                                    <!-- Impressora da Cozinha -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Impressora da Cozinha:"
+                                  Style="{StaticResource SettingLabelStyle}"
+                                  ToolTip="Impressora para envio de pedidos à cozinha"/>
+                                    <ComboBox Grid.Row="1" Grid.Column="1"
+                                 ItemsSource="{Binding AvailablePrinters}"
+                                 SelectedItem="{Binding Config.KitchenPrinterName}"
+                                 Style="{StaticResource ComboBoxStyle}"
+                                 ToolTip="Selecione a impressora para a cozinha"/>
+                                    <Button Grid.Row="1" Grid.Column="2"
+                               Content="Testar"
+                               Width="80"
+                               Height="35"
+                               Margin="10,0,0,0"
+                               Background="{StaticResource SecondaryColor}"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="TestKitchenPrinter_Click"
+                               ToolTip="Testar a impressora da cozinha"/>
+
+                                    <!-- Número de Cópias para Talões (NOVO) -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Nº de Cópias por Talão:"
+                                  Style="{StaticResource SettingLabelStyle}"
+                                  ToolTip="Número de cópias impressas automaticamente para cada talão"/>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBox x:Name="TxtCopiesCount"
+                                   Text="{Binding Config.CopiesCount, Mode=TwoWay}"
+                                   Width="70"
+                                   Height="30"
+                                   TextAlignment="Center"
+                                   PreviewTextInput="NumberValidationTextBox"
+                                   LostFocus="TxtCopiesCount_LostFocus"
+                                   ToolTip="Digite o número de cópias (1 a 10)">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox">
+                                                    <Setter Property="Foreground" Value="#333333"/>
+                                                    <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                                                    <Setter Property="BorderThickness" Value="1"/>
+                                                    <Setter Property="Padding" Value="5,2"/>
+                                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsFocused" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#2196F3"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                        </Trigger>
+                                                        <DataTrigger Binding="{Binding Config.CopiesCount}" Value="1">
+                                                            <Setter Property="Foreground" Value="#666666"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Config.CopiesCount}" Value="10">
+                                                            <Setter Property="Foreground" Value="#F44336"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBox.Style>
+                                        </TextBox>
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                            <Button x:Name="BtnDecreaseCopies"
+                                        Content="-"
+                                        Width="25"
+                                        Height="25"
+                                        Margin="0,0,5,0"
+                                        Background="#f0f0f0"
+                                        BorderBrush="#cccccc"
+                                        BorderThickness="1"
+                                        FontWeight="Bold"
+                                        Click="BtnDecreaseCopies_Click"
+                                        ToolTip="Diminuir número de cópias"/>
+                                            <Button x:Name="BtnIncreaseCopies"
+                                        Content="+"
+                                        Width="25"
+                                        Height="25"
+                                        Background="#f0f0f0"
+                                        BorderBrush="#cccccc"
+                                        BorderThickness="1"
+                                        FontWeight="Bold"
+                                        Click="BtnIncreaseCopies_Click"
+                                        ToolTip="Aumentar número de cópias"/>
+                                        </StackPanel>
+                                        <TextBlock Text=" cópias" 
+                                     Margin="10,0,0,0"
+                                     VerticalAlignment="Center"
+                                     Foreground="#666"/>
+                                    </StackPanel>
+                                    <Button Grid.Row="2" Grid.Column="2"
+                               Content="Testar Cópias"
+                               Width="100"
+                               Height="35"
+                               Margin="10,0,0,0"
+                               Background="#FF9800"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="TestCopies_Click"
+                               ToolTip="Testar impressão com o número de cópias configurado"/>
+
+                                    <!-- Modo de Impressão (NOVO) -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Modo de Impressão:"
+                                  Style="{StaticResource SettingLabelStyle}"
+                                  ToolTip="Define como as múltiplas cópias serão organizadas"/>
+                                    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Vertical" Margin="0,5">
+                                        <RadioButton x:Name="PrintModeSequential"
+                                       Content="Sequencial (uma cópia após a outra)"
+                                       Margin="0,2"
+                                       Checked="PrintModeRadioButton_Checked"
+                                       Unchecked="PrintModeRadioButton_Checked"
+                                       ToolTip="Imprime uma cópia completa antes de começar a próxima"/>
+                                        <RadioButton x:Name="PrintModeCollated"
+                                       Content="Intercalado (todas juntas se couber)"
+                                       Margin="0,2"
+                                       Checked="PrintModeRadioButton_Checked"
+                                       Unchecked="PrintModeRadioButton_Checked"
+                                       ToolTip="Tenta imprimir todas as cópias na mesma página"/>
+                                    </StackPanel>
+
+                                    <!-- Imprimir Comanda -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Imprimir Comanda:"
+                                  Style="{StaticResource SettingLabelStyle}"
+                                  ToolTip="Enviar automaticamente pedidos para a cozinha"/>
+                                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="PrintOrderToKitchenYes"
+                                       Content="Sim"
+                                       Margin="0,0,20,0"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"
+                                       ToolTip="Ativar impressão automática de pedidos para cozinha"/>
+                                        <RadioButton x:Name="PrintOrderToKitchenNo"
+                                       Content="Não"
+                                       Checked="BooleanRadioButton_Checked"
+                                       Unchecked="BooleanRadioButton_Checked"
+                                       ToolTip="Desativar impressão automática para cozinha"/>
+                                    </StackPanel>
+
+                                    <!-- Configurações Avançadas de Impressão -->
+                                    <Expander Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3"
+                                 Margin="0,15,0,0"
+                                 Header="Configurações Avançadas"
+                                 IsExpanded="False"
+                                 BorderThickness="1"
+                                 BorderBrush="#e0e0e0">
+                                        <StackPanel Margin="10">
+                                            <!-- Cabeçalho Personalizado para Talões -->
+                                            <TextBlock Text="Cabeçalho do Talão:"
+                                          FontWeight="SemiBold"
+                                          Margin="0,0,0,5"/>
+                                            <TextBox x:Name="TxtReceiptHeader"
+                                       Text="{Binding Config.ReceiptHeader, Mode=TwoWay}"
+                                       Height="60"
+                                       TextWrapping="Wrap"
+                                       AcceptsReturn="True"
+                                       VerticalScrollBarVisibility="Auto"
+                                       Margin="0,0,0,10"
+                                       ToolTip="Texto personalizado para o cabeçalho dos talões"/>
+
+                                            <!-- Rodapé Personalizado para Talões -->
+                                            <TextBlock Text="Rodapé do Talão:"
+                                          FontWeight="SemiBold"
+                                          Margin="0,0,0,5"/>
+                                            <TextBox x:Name="TxtReceiptFooter"
+                                       Text="{Binding Config.ReceiptFooter, Mode=TwoWay}"
+                                       Height="60"
+                                       TextWrapping="Wrap"
+                                       AcceptsReturn="True"
+                                       VerticalScrollBarVisibility="Auto"
+                                       Margin="0,0,0,10"
+                                       ToolTip="Texto personalizado para o rodapé dos talões"/>
+
+                                            <!-- Configurações de Papel -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                                <TextBlock Text="Largura do Papel (mm):"
+                                              VerticalAlignment="Center"
+                                              Width="150"/>
+                                                <TextBox x:Name="TxtPaperWidth"
+                                           Text="{Binding Config.PaperWidth, Mode=TwoWay}"
+                                           Width="80"
+                                           Height="25"
+                                           TextAlignment="Center"
+                                           PreviewTextInput="NumberValidationTextBox"
+                                           Margin="10,0,0,0"
+                                           ToolTip="Largura do papel em milímetros"/>
+                                            </StackPanel>
+
+                                            <!-- Margens de Impressão -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,5">
+                                                <TextBlock Text="Margem Esquerda (mm):"
+                                              VerticalAlignment="Center"
+                                              Width="150"/>
+                                                <TextBox x:Name="TxtMarginLeft"
+                                           Text="{Binding Config.MarginLeft, Mode=TwoWay}"
+                                           Width="60"
+                                           Height="25"
+                                           TextAlignment="Center"
+                                           PreviewTextInput="NumberValidationTextBox"
+                                           Margin="10,0,20,0"
+                                           ToolTip="Margem esquerda em milímetros"/>
+                                                <TextBlock Text="Margem Superior (mm):"
+                                              VerticalAlignment="Center"
+                                              Width="150"/>
+                                                <TextBox x:Name="TxtMarginTop"
+                                           Text="{Binding Config.MarginTop, Mode=TwoWay}"
+                                           Width="60"
+                                           Height="25"
+                                           TextAlignment="Center"
+                                           PreviewTextInput="NumberValidationTextBox"
+                                           Margin="10,0,0,0"
+                                           ToolTip="Margem superior em milímetros"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Expander>
+                                </Grid>
+
+                                <!-- Aviso e informações sobre configurações -->
+                                <Border Background="#E8F5E9" 
+                            CornerRadius="5" 
+                            Padding="10" 
+                            Margin="0,15,0,0"
+                            BorderThickness="1" 
+                            BorderBrush="#A5D6A7">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Informações importantes sobre impressão:"
+                                     FontWeight="SemiBold"
+                                     Foreground="#2E7D32"/>
+                                        <TextBlock Text="• Cada talão terá automaticamente o número de cópias configurado acima"
+                                     Margin="0,5,0,0"
+                                     Foreground="#555"
+                                     TextWrapping="Wrap"/>
+                                        <TextBlock Text="• Para impressões individuais, será perguntado o número de cópias"
+                                     Foreground="#555"
+                                     TextWrapping="Wrap"/>
+                                        <TextBlock Text="• Use 'Testar Cópias' para verificar a configuração atual"
+                                     Foreground="#555"
+                                     TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Painel de resultado do teste -->
+                                <Border x:Name="TestCopiesResultPanel"
+                           Background="#FFF3E0"
+                           CornerRadius="5"
+                           Padding="10"
+                           Margin="0,10,0,0"
+                           BorderThickness="1"
+                           BorderBrush="#FFCC80"
+                           Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtCopiesTestResult"
+                                     FontWeight="SemiBold"
+                                     Foreground="#E65100"/>
+                                        <TextBlock x:Name="TxtCopiesTestDetails"
+                                     Margin="0,5,0,0"
+                                     Foreground="#666"
+                                     TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Seção de configurações rápidas de impressão -->
+                        <Border Background="#F5F5F5" 
+                    CornerRadius="8" 
+                    Padding="15" 
+                    Margin="0,10,0,0"
+                    BorderThickness="1" 
+                    BorderBrush="#E0E0E0">
+                            <StackPanel>
+                                <TextBlock Text="📋 Perfis Rápidos de Impressão"
+                              FontWeight="SemiBold"
+                              FontSize="14"
+                              Foreground="#333"
+                              Margin="0,0,0,10"/>
+
+                                <WrapPanel>
+                                    <!-- Perfil Restaurante -->
+                                    <Button Content="🏨 Restaurante"
+                               Width="120"
+                               Height="35"
+                               Margin="0,0,10,10"
+                               Background="#4CAF50"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="ApplyRestaurantProfile_Click"
+                               ToolTip="Configurar para restaurante: 1 cópia, impressão normal"/>
+
+                                    <!-- Perfil Bar/Café -->
+                                    <Button Content="☕ Bar/Café"
+                               Width="120"
+                               Height="35"
+                               Margin="0,0,10,10"
+                               Background="#2196F3"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="ApplyBarProfile_Click"
+                               ToolTip="Configurar para bar/café: 1 cópia, impressão rápida"/>
+
+                                    <!-- Perfil Festas/Eventos -->
+                                    <Button Content="🎉 Festas/Eventos"
+                               Width="120"
+                               Height="35"
+                               Margin="0,0,10,10"
+                               Background="#FF9800"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="ApplyPartyProfile_Click"
+                               ToolTip="Configurar para eventos: 2 cópias, uma para cliente e outra para arquivo"/>
+
+                                    <!-- Perfil Delivery -->
+                                    <Button Content="🚚 Delivery"
+                               Width="120"
+                               Height="35"
+                               Margin="0,0,10,10"
+                               Background="#9C27B0"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="ApplyDeliveryProfile_Click"
+                               ToolTip="Configurar para delivery: 2 cópias, uma para cliente e outra para motoboy"/>
+
+                                    <!-- Perfil Hotel -->
+                                    <Button Content="🏨 Hotel"
+                               Width="120"
+                               Height="35"
+                               Margin="0,0,10,10"
+                               Background="#607D8B"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Click="ApplyHotelProfile_Click"
+                               ToolTip="Configurar para hotel: 3 cópias, cliente, cozinha e arquivo"/>
+                                </WrapPanel>
+
+                                <TextBlock Text="Clique em um perfil para aplicar configurações pré-definidas"
+                              FontSize="12"
+                              Foreground="#666"
+                              Margin="0,10,0,0"
+                              TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <!-- Tab 6: Tela VFD -->
+            <TabItem Header="📺 Tela VFD">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="5">
+                        <StackPanel Margin="15">
+                            <Border Background="White" CornerRadius="8" Padding="20"
+                                    BorderThickness="1" BorderBrush="#e0e0e0">
+                                <StackPanel>
+                                    <TextBlock Text="Configurações da Tela Secundária (VFD)"
+                                              Style="{StaticResource SectionHeaderStyle}"/>
+                                    <Grid Margin="0,5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <!-- Estado da Tela VFD -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Estado da Tela VFD:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                                            <RadioButton x:Name="VFDEenabledYes"
+                                                       Content="Ativada"
+                                                       Margin="0,0,20,0"
+                                                       Checked="BooleanRadioButton_Checked"
+                                                       Unchecked="BooleanRadioButton_Checked"/>
+                                            <RadioButton x:Name="VFDEenabledNo"
+                                                       Content="Desativada"
+                                                       Checked="BooleanRadioButton_Checked"
+                                                       Unchecked="BooleanRadioButton_Checked"/>
+                                        </StackPanel>
+                                        <!-- Porta COM -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Porta COM:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <ComboBox Grid.Row="1" Grid.Column="1"
+                                                 ItemsSource="{Binding AvailableCOMPorts}"
+                                                 SelectedItem="{Binding SelectedCOMPort}">
+                                            <ComboBox.Style>
+                                                <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ComboBox.Style>
+                                        </ComboBox>
+                                        <Button Grid.Row="1" Grid.Column="2"
+                                               Content="Detectar"
+                                               Width="100"
+                                               Height="35"
+                                               Margin="10,0,0,0"
+                                               Background="{StaticResource SecondaryColor}"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"
+                                               Click="DetectCOMPorts_Click">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <!-- Baud Rate -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Baud Rate:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <ComboBox Grid.Row="2" Grid.Column="1"
+                                                 ItemsSource="{Binding BaudRates}"
+                                                 SelectedItem="{Binding SelectedBaudRate}">
+                                            <ComboBox.Style>
+                                                <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ComboBox.Style>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <!-- Linhas do Display -->
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Linhas do Display:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <ComboBox Grid.Row="3" Grid.Column="1"
+                                                 ItemsSource="{Binding DisplayLines}"
+                                                 SelectedItem="{Binding SelectedDisplayLines}">
+                                            <ComboBox.Style>
+                                                <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ComboBox.Style>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <!-- Colunas do Display -->
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Colunas do Display:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <ComboBox Grid.Row="4" Grid.Column="1"
+                                                 ItemsSource="{Binding DisplayColumns}"
+                                                 SelectedItem="{Binding SelectedDisplayColumns}">
+                                            <ComboBox.Style>
+                                                <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ComboBox.Style>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <!-- Mostrar Total em Tempo Real -->
+                                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Mostrar Total:"
+                                                  Style="{StaticResource SettingLabelStyle}"/>
+                                        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+                                            <RadioButton x:Name="ShowRealTimeTotalYes"
+                                                       Content="Sim"
+                                                       Margin="0,0,20,0"
+                                                       Checked="BooleanRadioButton_Checked"
+                                                       Unchecked="BooleanRadioButton_Checked">
+                                                <RadioButton.Style>
+                                                    <Style TargetType="RadioButton">
+                                                        <Setter Property="IsEnabled" Value="True"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                                <Setter Property="Opacity" Value="0.6"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </RadioButton.Style>
+                                            </RadioButton>
+                                            <RadioButton x:Name="ShowRealTimeTotalNo"
+                                                       Content="Não"
+                                                       Checked="BooleanRadioButton_Checked"
+                                                       Unchecked="BooleanRadioButton_Checked">
+                                                <RadioButton.Style>
+                                                    <Style TargetType="RadioButton">
+                                                        <Setter Property="IsEnabled" Value="True"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsVFDEenabled}" Value="False">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                                <Setter Property="Opacity" Value="0.6"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </RadioButton.Style>
+                                            </RadioButton>
+                                        </StackPanel>
+                                    </Grid>
+                                    <!-- Preview da Tela VFD -->
+                                    <Border BorderBrush="#2c3e50"
+                                           BorderThickness="2"
+                                           Background="Black"
+                                           CornerRadius="4"
+                                           Padding="15"
+                                           Margin="0,30,0,0"
+                                           Height="200"
+                                           HorizontalAlignment="Center"
+                                           Width="400">
+                                        <Grid>
+                                            <Border Background="#001a00"
+                                                   CornerRadius="2"
+                                                   Padding="10">
+                                                <TextBlock Text="{Binding VFDPreviewText}"
+                                                          Foreground="#00ff00"
+                                                          FontFamily="Courier New, Consolas, Monospace"
+                                                          FontSize="18"
+                                                          FontWeight="Bold"
+                                                          TextAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <Ellipse Width="12" Height="12"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Top"
+                                                   Margin="10"
+                                                   Fill="Green">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsVFDEenabled}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Text="Preview da Tela VFD"
+                                              HorizontalAlignment="Center"
+                                              Margin="0,10,0,0"
+                                              Foreground="#7f8c8d"
+                                              FontStyle="Italic">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsVFDEenabled}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <!-- Painel de Ações VFD -->
+                    <Border Grid.Row="1" Background="{StaticResource LightGray}" Padding="20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="🔌 Testar Conexão"
+                                   Background="{StaticResource SecondaryColor}"
+                                   Foreground="White"
+                                   Click="TestVFDConnection_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVFDEenabled}" Value="True">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="🔄 Atualizar Preview"
+                                   Background="{StaticResource SuccessColor}"
+                                   Foreground="White"
+                                   Margin="20,0,0,0"
+                                   Click="UpdateVFDPreview_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVFDEenabled}" Value="True">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="🖥️ Tela Secundária">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                    <StackPanel Margin="15">
+                        <Border Background="White" CornerRadius="8" Padding="20"
+                                BorderThickness="1" BorderBrush="#e0e0e0">
+                            <StackPanel>
+                                <TextBlock Text="Configurações da Tela Secundária"
+                                          Style="{StaticResource SectionHeaderStyle}"/>
+                                <Grid Margin="0,20,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="250"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Ativar Tela Secundária -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                              Text="Ativar Tela Secundária (Monitor do Cliente):"
+                                              Style="{StaticResource SettingLabelStyle}"
+                                              VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                                        <RadioButton x:Name="SecondScreenYes"
+                                                    Content="Ativada"
+                                                    Margin="0,0,30,0"
+                                                    FontSize="16"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                        <RadioButton x:Name="SecondScreenNo"
+                                                    Content="Desativada"
+                                                    FontSize="16"
+                                                    Checked="BooleanRadioButton_Checked"
+                                                    Unchecked="BooleanRadioButton_Checked"/>
+                                    </StackPanel>
+                                    <!-- Informação útil -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                              Text="Quando ativada, uma janela em tela cheia será aberta automaticamente no monitor secundário, mostrando o carrinho em tempo real para o cliente."
+                                              Foreground="#7f8c8d"
+                                              FontStyle="Italic"
+                                              TextWrapping="Wrap"
+                                              Margin="0,20,0,10"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                              Text="• Design elegante com fundo escuro e texto grande&#10;• Mostra itens, quantidades e total final&#10;• Mensagem de &quot;Obrigado&quot; após pagamento&#10;• Suporta logo do restaurante"
+                                              Foreground="#34495e"
+                                              FontSize="14"
+                                              Margin="0,10,0,0"
+                                              LineHeight="24"/>
+                                </Grid>
+                                <!-- Preview visual da tela secundária -->
+                                <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                        Background="#0F172A"
+                                        CornerRadius="12"
+                                        Padding="20"
+                                        Margin="0,30,0,0"
+                                        Height="300"
+                                        HorizontalAlignment="Center">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Config.RestaurantName, FallbackValue='RESTAURANTE'}"
+                                                  FontSize="36"
+                                                  FontWeight="ExtraBold"
+                                                  Foreground="#FFD700"
+                                                  TextAlignment="Center"/>
+                                        <TextBlock Text="Bem-vindo!"
+                                                  FontSize="32"
+                                                  Foreground="#64B5F6"
+                                                  TextAlignment="Center"
+                                                  Margin="0,10,0,0"/>
+                                        <TextBlock Text="Aguardando o seu pedido..."
+                                                  FontSize="28"
+                                                  Foreground="#95A5A6"
+                                                  TextAlignment="Center"
+                                                  Margin="0,30,0,0"/>
+                                        <TextBlock Text="TOTAL: 0,00 MT"
+                                                  FontSize="48"
+                                                  FontWeight="Bold"
+                                                  Foreground="#27AE60"
+                                                  TextAlignment="Center"
+                                                  Margin="0,40,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                          Text="Visualização aproximada da tela do cliente"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,10,0,0"
+                                          Foreground="#7f8c8d"
+                                          FontStyle="Italic"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="{StaticResource LightGray}" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="10" Height="10" Fill="{StaticResource SuccessColor}" Margin="0,0,10,0"/>
+                    <TextBlock Text="Configurações prontas para salvar"
+                              FontWeight="Medium"
+                              Foreground="{StaticResource PrimaryColor}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="💾 Salvar"
+                           Width="130"
+                           Height="45"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Background="{StaticResource SuccessColor}"
+                           Foreground="White"
+                           Click="SaveSettings_Click"
+                           Margin="0,0,10,0"
+                           Cursor="Hand"/>
+                    <Button Content="↩️ Cancelar"
+                           Width="130"
+                           Height="45"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Background="{StaticResource DangerColor}"
+                           Foreground="White"
+                           Click="Cancel_Click"
+                           Margin="0,0,10,0"
+                           Cursor="Hand"/>
+                    <Button Content="🔄 Padrões"
+                           Width="130"
+                           Height="45"
+                           FontWeight="Bold"
+                           FontSize="15"
+                           Background="{StaticResource WarningColor}"
+                           Foreground="White"
+                           Click="ResetToDefaults_Click"
+                           Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

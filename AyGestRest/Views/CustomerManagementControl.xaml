@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="AyGestRest.Views.CustomerManagementControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="500" Width="900"
+             Background="#FAFAFA">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="1.2*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Lista de Clientes -->
+        <Border CornerRadius="10" Background="White" Padding="10" Margin="0,0,10,0" BorderBrush="#DDD" BorderThickness="1">
+            <DataGrid x:Name="ClientesDataGrid" AutoGenerateColumns="False" CanUserAddRows="False"
+                      RowBackground="#F9F9F9" AlternatingRowBackground="#EFEFEF" GridLinesVisibility="None">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Código" Binding="{Binding CodigoUnico}" Width="*" />
+                    <DataGridTextColumn Header="Nome" Binding="{Binding Nome}" Width="*" />
+                    <DataGridTextColumn Header="Telefone" Binding="{Binding Telefone}" Width="*" />
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*" />
+                    <DataGridTextColumn Header="Pontos" Binding="{Binding Pontos}" Width="*" />
+                    <DataGridTextColumn Header="Última Visita" Binding="{Binding UltimaVisita, StringFormat=d}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Formulário de Cadastro -->
+        <Border Grid.Column="1" CornerRadius="10" Background="White" Padding="20" BorderBrush="#DDD" BorderThickness="1">
+            <StackPanel VerticalAlignment="Top">
+                <TextBlock Text="Cadastrar Cliente" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <TextBlock Text="Nome" />
+                <TextBox x:Name="NomeTextBox" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Telefone" />
+                <TextBox x:Name="TelefoneTextBox" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Email" />
+                <TextBox x:Name="EmailTextBox" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Pontos" />
+                <TextBox x:Name="PontosTextBox" Margin="0,0,0,10"/>
+
+                <TextBlock Text="Última Visita" />
+                <DatePicker x:Name="UltimaVisitaPicker" Margin="0,0,0,20"/>
+
+                <Button Content="Adicionar Cliente" Height="40" Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                        Click="AdicionarCliente_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

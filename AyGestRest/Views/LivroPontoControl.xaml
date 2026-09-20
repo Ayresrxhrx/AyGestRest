@@ -1,0 +1,796 @@
+﻿<UserControl x:Class="AyGestRest.Views.LivroPontoControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1200"
+             Loaded="UserControl_Loaded"
+             Background="#F0F2F5">
+
+    <UserControl.Resources>
+        <!-- Cores Principais -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#4F46E5"/>
+        <SolidColorBrush x:Key="PrimaryDark" Color="#4338CA"/>
+        <SolidColorBrush x:Key="PrimaryLight" Color="#EEF2FF"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
+        <SolidColorBrush x:Key="SuccessDark" Color="#059669"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#EF4444"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#1F2937"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
+        <SolidColorBrush x:Key="TextLight" Color="#9CA3AF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="BackgroundLight" Color="#F9FAFB"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+
+        <!-- Sombras -->
+        <DropShadowEffect x:Key="ShadowLight" BlurRadius="4" Direction="270" ShadowDepth="1" Opacity="0.06"/>
+        <DropShadowEffect x:Key="ShadowMedium" BlurRadius="8" Direction="270" ShadowDepth="2" Opacity="0.1"/>
+
+        <!-- Estilos de Botões -->
+        <Style x:Key="BaseButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="6" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Background" Value="{StaticResource SuccessColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Background" Value="{StaticResource DangerColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Background" Value="{StaticResource WarningColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Card Moderno -->
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Effect" Value="{StaticResource ShadowLight}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- DataGrid Moderno -->
+        <Style x:Key="ModernDataGrid" TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserReorderColumns" Value="True"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="ColumnHeaderHeight" Value="35"/>
+            <Setter Property="RowHeight" Value="32"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#F1F3F4"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#F1F3F4"/>
+            <Setter Property="EnableRowVirtualization" Value="True"/>
+            <Setter Property="EnableColumnVirtualization" Value="True"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+            <Setter Property="CellStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="8,4"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F8FAFC"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                        <Setter Property="Padding" Value="8,4"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="FontSize" Value="11"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RowStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="#F1F3F4"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryLight}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryLight}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- TabControl Moderno -->
+        <Style TargetType="TabItem">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="content" 
+                                              ContentSource="Header" 
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryLight}"/>
+                                <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="0,0,0,3"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F3F4F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilos para ComboBox e TextBox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryColor}" Padding="16,12" CornerRadius="8" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="📋" FontSize="24" Margin="0,0,12,0"/>
+                <TextBlock Text="LIVRO DE PONTO - REGISTRO DE FUNCIONÁRIOS" 
+                           FontSize="18" FontWeight="Bold" Foreground="White" 
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Status e Informações -->
+        <Border Grid.Row="1" Style="{StaticResource ModernCard}" Margin="0,0,0,12" Padding="12">
+            <WrapPanel x:Name="pnlStatus" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Border Background="{StaticResource SuccessColor}" Padding="14,8" CornerRadius="6" Margin="4">
+                    <TextBlock x:Name="txtFuncionariosAtivos" Text="Funcionários Ativos: 0" 
+                               FontSize="13" FontWeight="Bold" Foreground="White"/>
+                </Border>
+                <Border Background="#3B82F6" Padding="14,8" CornerRadius="6" Margin="4">
+                    <TextBlock x:Name="txtPresentesHoje" Text="Presentes Hoje: 0" 
+                               FontSize="13" FontWeight="Bold" Foreground="White"/>
+                </Border>
+                <Border Background="#F59E0B" Padding="14,8" CornerRadius="6" Margin="4">
+                    <TextBlock x:Name="txtAtrasadosHoje" Text="Atrasados: 0" 
+                               FontSize="13" FontWeight="Bold" Foreground="White"/>
+                </Border>
+                <Border Background="#EF4444" Padding="14,8" CornerRadius="6" Margin="4">
+                    <TextBlock x:Name="txtAusentesHoje" Text="Ausentes: 0" 
+                               FontSize="13" FontWeight="Bold" Foreground="White"/>
+                </Border>
+            </WrapPanel>
+        </Border>
+
+        <!-- Conteúdo Principal com Abas -->
+        <TabControl Grid.Row="2" Background="Transparent" BorderThickness="0">
+            <!-- Aba: Registro de Ponto -->
+            <TabItem Header="🕒 REGISTRO DE PONTO" IsSelected="True">
+                <Border Style="{StaticResource ModernCard}" Margin="0,4,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Painel de Registro Rápido -->
+                        <Border Grid.Row="0" Background="{StaticResource BackgroundLight}" 
+                                Padding="16" CornerRadius="6" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="👤 Funcionário:" 
+                                           VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimary}" Margin="0,0,8,0"/>
+
+                                <ComboBox Grid.Column="1" x:Name="cmbFuncionarios" 
+                                          DisplayMemberPath="FullName" 
+                                          SelectedValuePath="Id"
+                                          FontSize="14" Height="36"
+                                          SelectionChanged="cmbFuncionarios_SelectionChanged"/>
+
+                                <Button Grid.Column="2" x:Name="btnRegistrarEntrada" 
+                                        Content="✅ ENTRADA" 
+                                        Style="{StaticResource SuccessButton}"
+                                        Height="36" Width="140" FontWeight="Bold"
+                                        Click="btnRegistrarEntrada_Click"/>
+
+                                <Button Grid.Column="3" x:Name="btnRegistrarSaida" 
+                                        Content="⏰ SAÍDA" 
+                                        Style="{StaticResource WarningButton}"
+                                        Height="36" Width="140" FontWeight="Bold"
+                                        Click="btnRegistrarSaida_Click" Margin="4,0,0,0"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- DataGrid de Registros do Dia -->
+                        <GroupBox Grid.Row="1" Header="📊 REGISTROS DE HOJE" Margin="0,0,0,8">
+                            <DataGrid x:Name="dgRegistrosHoje" Style="{StaticResource ModernDataGrid}" MaxHeight="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Funcionário" Binding="{Binding NomeFuncionario}" Width="180"/>
+                                    <DataGridTextColumn Header="Data" Binding="{Binding Data, StringFormat='dd/MM/yyyy'}" Width="100"/>
+                                    <DataGridTextColumn Header="Entrada" Binding="{Binding HoraEntrada, StringFormat='hh\\:mm'}" Width="80"/>
+                                    <DataGridTextColumn Header="Saída" Binding="{Binding HoraSaida, StringFormat='hh\\:mm'}" Width="80"/>
+                                    <DataGridTextColumn Header="Horas Trab." Binding="{Binding HorasTrabalhadas, StringFormat='hh\\:mm'}" Width="90"/>
+                                    <DataGridTextColumn Header="Atraso" Binding="{Binding Atraso, StringFormat='hh\\:mm'}" Width="80"/>
+                                    <DataGridCheckBoxColumn Header="H.E. Autorizada" Binding="{Binding HoraExtraAutorizada}" Width="110"/>
+                                    <DataGridTextColumn Header="Turno" Binding="{Binding Turno}" Width="80"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <!-- Painel de Ações -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                            <Button x:Name="btnMarcarAusencia" Content="❌ MARCAR AUSÊNCIA" 
+                                    Style="{StaticResource DangerButton}"
+                                    Click="btnMarcarAusencia_Click"/>
+                            <Button x:Name="btnAtualizar" Content="🔄 ATUALIZAR" 
+                                    Style="{StaticResource PrimaryButton}"
+                                    Click="btnAtualizar_Click" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- Aba: Gerenciar Horários -->
+            <TabItem Header="⚙️ GERENCIAR HORÁRIOS">
+                <Border Style="{StaticResource ModernCard}" Margin="0,4,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Seleção de Funcionário -->
+                        <Border Grid.Row="0" Background="{StaticResource BackgroundLight}" 
+                                Padding="16" CornerRadius="6" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="👤 Funcionário:" VerticalAlignment="Center" 
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimary}" Margin="0,0,8,0"/>
+                                <ComboBox x:Name="cmbFuncionariosHorario" 
+                                          DisplayMemberPath="FullName" 
+                                          SelectedValuePath="Id"
+                                          Width="250" Height="36" FontSize="14"
+                                          SelectionChanged="cmbFuncionariosHorario_SelectionChanged"/>
+                                <Button x:Name="btnCriarHorario" Content="➕ NOVO HORÁRIO" 
+                                        Style="{StaticResource SuccessButton}"
+                                        Click="btnCriarHorario_Click" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Configuração de Horários -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <!-- Horário Padrão -->
+                                <Border Background="{StaticResource PrimaryLight}" Padding="10" Margin="0,0,0,8" CornerRadius="6">
+                                    <TextBlock Text="⏰ HORÁRIO PADRÃO" FontSize="15" FontWeight="Bold" 
+                                               Foreground="{StaticResource PrimaryColor}" HorizontalAlignment="Center"/>
+                                </Border>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Style="{StaticResource ModernCard}" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock Text="Entrada Padrão:" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBox x:Name="txtHorarioPadraoEntrada" Text="09:00" Width="120" FontSize="14"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Column="1" Style="{StaticResource ModernCard}" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock Text="Saída Padrão:" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBox x:Name="txtHorarioPadraoSaida" Text="18:00" Width="120" FontSize="14"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Column="2" Style="{StaticResource ModernCard}" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock Text="Horas por Dia:" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBox x:Name="txtHorasPorDia" Text="8" Width="120" FontSize="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <Border Background="{StaticResource PrimaryLight}" Padding="10" Margin="0,8,0,8" CornerRadius="6">
+                                    <TextBlock Text="📅 HORÁRIOS POR DIA DA SEMANA" FontSize="15" FontWeight="Bold" 
+                                               Foreground="{StaticResource PrimaryColor}" HorizontalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Dias da Semana -->
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkSegunda" 
+                                                  Content="Segunda-feira" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSegundaEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSegundaSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkTerca" 
+                                                  Content="Terça-feira" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtTercaEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtTercaSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkQuarta" 
+                                                  Content="Quarta-feira" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtQuartaEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtQuartaSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkQuinta" 
+                                                  Content="Quinta-feira" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtQuintaEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtQuintaSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkSexta" 
+                                                  Content="Sexta-feira" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSextaEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSextaSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkSabado" 
+                                                  Content="Sábado" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSabadoEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="False"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSabadoSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="False"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource BackgroundLight}" Padding="10" Margin="0,0,0,4" CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0" x:Name="chkDomingo" 
+                                                  Content="Domingo" VerticalAlignment="Center" 
+                                                  FontWeight="SemiBold" FontSize="13"
+                                                  Checked="chkDia_Checked" Unchecked="chkDia_Checked"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Text="Entrada:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtDomingoEntrada" Text="09:00" Width="80" FontSize="13" IsEnabled="False"/>
+                                            <TextBlock Text="Saída:" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="12"/>
+                                            <TextBox x:Name="txtDomingoSaida" Text="18:00" Width="80" FontSize="13" IsEnabled="False"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Botão Salvar -->
+                                <Button x:Name="btnSalvarHorario" Content="💾 SALVAR HORÁRIO" 
+                                        Style="{StaticResource SuccessButton}"
+                                        Height="44" FontSize="15" FontWeight="Bold"
+                                        Margin="10" HorizontalAlignment="Center" Width="300"
+                                        Click="btnSalvarHorario_Click"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- Aba: Relatórios -->
+            <TabItem Header="📊 RELATÓRIOS">
+                <Border Style="{StaticResource ModernCard}" Margin="0,4,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Filtros -->
+                        <Border Grid.Row="0" Background="{StaticResource BackgroundLight}" 
+                                Padding="16" CornerRadius="6" Margin="0,0,0,12">
+                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="📅 Data Início:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                <DatePicker x:Name="dpDataInicio" Width="130" FontSize="13"/>
+
+                                <TextBlock Text="Data Fim:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="12,0,4,0"/>
+                                <DatePicker x:Name="dpDataFim" Width="130" FontSize="13"/>
+
+                                <TextBlock Text="👤 Funcionário:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="12,0,4,0"/>
+                                <ComboBox x:Name="cmbFiltroFuncionario" 
+                                          DisplayMemberPath="FullName" 
+                                          SelectedValuePath="Id"
+                                          Width="160" Height="32" FontSize="13">
+                                    <ComboBoxItem Content="👤 Todos os Funcionários" IsSelected="True"/>
+                                </ComboBox>
+
+                                <Button x:Name="btnFiltrarRelatorio" Content="🔍 FILTRAR" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="btnFiltrarRelatorio_Click" Margin="8,0,0,0"/>
+                                <Button x:Name="btnExportarRelatorio" Content="📄 EXPORTAR" 
+                                        Style="{StaticResource SuccessButton}"
+                                        Click="btnExportarRelatorio_Click" Margin="4,0,0,0"/>
+                            </WrapPanel>
+                        </Border>
+
+                        <!-- Resumo do Relatório -->
+                        <Border Grid.Row="1" Background="{StaticResource PrimaryLight}" 
+                                Padding="12,8" CornerRadius="6" Margin="5,0,5,8">
+                            <TextBlock x:Name="txtResumoRelatorio" 
+                                       Text="📊 Aguardando filtro..." 
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimary}"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <!-- DataGrid de Relatório -->
+                        <DataGrid Grid.Row="2" x:Name="dgRelatorio" Style="{StaticResource ModernDataGrid}" MaxHeight="350">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Funcionário" Binding="{Binding NomeFuncionario}" Width="160"/>
+                                <DataGridTextColumn Header="Data" Binding="{Binding Data, StringFormat='dd/MM/yyyy'}" Width="85"/>
+                                <DataGridTextColumn Header="Entrada" Binding="{Binding HoraEntrada, StringFormat='hh\\:mm'}" Width="65"/>
+                                <DataGridTextColumn Header="Saída" Binding="{Binding HoraSaida, StringFormat='hh\\:mm'}" Width="65"/>
+                                <DataGridTextColumn Header="Horas Trab." Binding="{Binding HorasTrabalhadas, StringFormat='hh\\:mm'}" Width="80"/>
+                                <DataGridTextColumn Header="Prev. Entrada" Binding="{Binding HorarioPrevistoEntrada, StringFormat='hh\\:mm'}" Width="80"/>
+                                <DataGridTextColumn Header="Prev. Saída" Binding="{Binding HorarioPrevistoSaida, StringFormat='hh\\:mm'}" Width="80"/>
+                                <DataGridTextColumn Header="Atraso" Binding="{Binding Atraso, StringFormat='hh\\:mm'}" Width="70"/>
+                                <DataGridTextColumn Header="H. Extras" Binding="{Binding HorasExtras, StringFormat='hh\\:mm'}" Width="70"/>
+                                <DataGridTextColumn Header="Turno" Binding="{Binding Turno}" Width="70"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- NOVA ABA: GRÁFICOS -->
+            <TabItem Header="📈 GRÁFICOS">
+                <Border Style="{StaticResource ModernCard}" Margin="0,4,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Filtros para Gráficos -->
+                        <Border Grid.Row="0" Background="{StaticResource BackgroundLight}" 
+                                Padding="16" CornerRadius="6" Margin="0,0,0,12">
+                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="📅 Data Início:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="0,0,4,0"/>
+                                <DatePicker x:Name="dpGraficoInicio" Width="130" FontSize="13"/>
+
+                                <TextBlock Text="Data Fim:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="12,0,4,0"/>
+                                <DatePicker x:Name="dpGraficoFim" Width="130" FontSize="13"/>
+
+                                <TextBlock Text="👤 Funcionário:" VerticalAlignment="Center" 
+                                           FontSize="13" FontWeight="SemiBold" Margin="12,0,4,0"/>
+                                <ComboBox x:Name="cmbGraficoFuncionario" 
+                                          DisplayMemberPath="FullName" 
+                                          SelectedValuePath="Id"
+                                          Width="160" Height="32" FontSize="13">
+                                    <ComboBoxItem Content="👤 Todos os Funcionários" IsSelected="True"/>
+                                </ComboBox>
+
+                                <Button x:Name="btnGerarGraficos" Content="📊 GERAR GRÁFICOS" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="btnGerarGraficos_Click" Margin="8,0,0,0"/>
+                            </WrapPanel>
+                        </Border>
+
+                        <!-- Área de Gráficos -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Resumo dos Gráficos -->
+                                <Border Grid.Row="0" Background="{StaticResource PrimaryLight}" 
+                                        Padding="12,8" CornerRadius="6" Margin="0,0,0,12">
+                                    <TextBlock x:Name="txtResumoGraficos" 
+                                               Text="📊 Selecione o período e clique em 'Gerar Gráficos'" 
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimary}"
+                                               HorizontalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Gráfico de Pizza - Presenças vs Ausências -->
+                                <Border Grid.Row="1" Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="🍕 PRESENÇAS VS AUSÊNCIAS" 
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryColor}"
+                                                   Margin="0,0,0,12" HorizontalAlignment="Center"/>
+
+                                        <!-- Canvas para o gráfico de pizza -->
+                                        <Canvas x:Name="canvasPizza" Height="300" 
+                                                Background="White" 
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"/>
+
+                                        <!-- Legenda do gráfico de pizza -->
+                                        <WrapPanel x:Name="pnlLegendaPizza" 
+                                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Gráfico de Barras - Horas por Funcionário -->
+                                <Border Grid.Row="2" Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="📊 HORAS TRABALHADAS POR FUNCIONÁRIO" 
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="{StaticResource PrimaryColor}"
+                                                   Margin="0,0,0,12" HorizontalAlignment="Center"/>
+
+                                        <!-- Canvas para o gráfico de barras -->
+                                        <Canvas x:Name="canvasBarras" Height="300" 
+                                                Background="White" 
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"/>
+
+                                        <!-- Legenda do gráfico de barras -->
+                                        <WrapPanel x:Name="pnlLegendaBarras" 
+                                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Gráfico de Barras - Atrasos por Funcionário -->
+                                <Border Grid.Row="3" Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="⚠️ ATRASOS POR FUNCIONÁRIO" 
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="{StaticResource WarningColor}"
+                                                   Margin="0,0,0,12" HorizontalAlignment="Center"/>
+
+                                        <Canvas x:Name="canvasAtrasos" Height="300" 
+                                                Background="White" 
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"/>
+
+                                        <WrapPanel x:Name="pnlLegendaAtrasos" 
+                                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Gráfico de Barras - Resumo Geral -->
+                                <Border Grid.Row="4" Style="{StaticResource ModernCard}">
+                                    <StackPanel>
+                                        <TextBlock Text="📈 RESUMO GERAL DE HORAS" 
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="{StaticResource SuccessColor}"
+                                                   Margin="0,0,0,12" HorizontalAlignment="Center"/>
+
+                                        <Canvas x:Name="canvasResumoGeral" Height="250" 
+                                                Background="White" 
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"/>
+
+                                        <WrapPanel x:Name="pnlLegendaResumo" 
+                                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

@@ -1,0 +1,567 @@
+﻿<UserControl x:Class="AyGestRest.Views.ReportsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="768" d:DesignWidth="1366"
+             Loaded="Window_Loaded">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#2196F3"/>
+        <SolidColorBrush x:Key="PrimaryLightColor" Color="#E3F2FD"/>
+        <SolidColorBrush x:Key="SecondaryColor" Color="#00C853"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#7C4DFF"/>
+        <SolidColorBrush x:Key="DarkColor" Color="#263238"/>
+        <SolidColorBrush x:Key="LightColor" Color="#FAFAFA"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="InfoColor" Color="#2196F3"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#FF9800"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#F44336"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#212121"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#757575"/>
+
+        <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2196F3" Offset="0"/>
+            <GradientStop Color="#1976D2" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="SuccessGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#4CAF50" Offset="0"/>
+            <GradientStop Color="#388E3C" Offset="1"/>
+        </LinearGradientBrush>
+
+        <DropShadowEffect x:Key="ShadowLight" BlurRadius="4" Direction="270" ShadowDepth="1" Opacity="0.08"/>
+        <DropShadowEffect x:Key="ShadowMedium" BlurRadius="8" Direction="270" ShadowDepth="2" Opacity="0.12"/>
+        <DropShadowEffect x:Key="ShadowHeavy" BlurRadius="12" Direction="270" ShadowDepth="3" Opacity="0.15"/>
+
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Effect" Value="{StaticResource ShadowLight}"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryGradient}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource ShadowMedium}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource LightColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="Transparent" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                                <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernDataGrid" TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8F9FA"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserReorderColumns" Value="True"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="ColumnHeaderHeight" Value="40"/>
+            <Setter Property="RowHeight" Value="38"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#F1F3F4"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#F1F3F4"/>
+            <Setter Property="EnableRowVirtualization" Value="True"/>
+            <Setter Property="EnableColumnVirtualization" Value="True"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+            <Setter Property="MaxHeight" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}, Path=ActualHeight}"/>
+            <Setter Property="CellStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="10,6"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F8F9FA"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                        <Setter Property="Padding" Value="10,6"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="FontSize" Value="12"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RowStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="#F1F3F4"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="StatCard" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Effect" Value="{StaticResource ShadowLight}"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="MinWidth" Value="150"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+
+        <Style x:Key="SidebarToggle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border" Background="Transparent" CornerRadius="6">
+                            <Grid>
+                                <Path x:Name="hamburger" Data="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" Fill="{StaticResource TextSecondary}" Stretch="Uniform" Width="18" Height="18"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="hamburger" Property="Fill" Value="{StaticResource PrimaryColor}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="hamburger" Property="Data" Value="M13.41,12L20.71,4.71L19.29,3.29L12,10.59L4.71,3.29L3.29,4.71L10.59,12L3.29,19.29L4.71,20.71L12,13.41L19.29,20.71L20.71,19.29L13.41,12Z"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Storyboard x:Key="FadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25"/>
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" x:Name="sidebarColumn"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar com scroll interno -->
+        <Border Grid.Column="0" x:Name="sidebarBorder" Background="{StaticResource LightColor}" BorderThickness="0,0,1,0" BorderBrush="{StaticResource BorderColor}" Width="300" Visibility="Visible">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="White" Padding="12,10" BorderThickness="0,0,0,1" BorderBrush="{StaticResource BorderColor}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔍 Filtros" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                        <ToggleButton x:Name="btnToggleSidebar" Grid.Column="1" Style="{StaticResource SidebarToggle}" Checked="BtnToggleSidebar_Checked" Unchecked="BtnToggleSidebar_Unchecked"/>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
+                    <StackPanel>
+                        <!-- Período -->
+                        <Border Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="📅 Período" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <ComboBox x:Name="cmbPeriod" FontSize="12" Padding="10,6" BorderThickness="1" BorderBrush="{StaticResource BorderColor}" SelectionChanged="CmbPeriod_SelectionChanged" Background="White">
+                                    <ComboBoxItem Content="Hoje" IsSelected="True"/>
+                                    <ComboBoxItem Content="Ontem"/>
+                                    <ComboBoxItem Content="Esta Semana"/>
+                                    <ComboBoxItem Content="Última Semana"/>
+                                    <ComboBoxItem Content="Este Mês"/>
+                                    <ComboBoxItem Content="Mês Passado"/>
+                                    <ComboBoxItem Content="Personalizado"/>
+                                </ComboBox>
+                                <StackPanel x:Name="pnlCustomDates" Visibility="Collapsed" Margin="0,10,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="De:" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <DatePicker x:Name="dpStart" Grid.Column="1" FontSize="11" Padding="6" SelectedDateChanged="DpStart_SelectedDateChanged" Background="White"/>
+                                    </Grid>
+                                    <Grid Margin="0,6,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Até:" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <DatePicker x:Name="dpEnd" Grid.Column="1" FontSize="11" Padding="6" SelectedDateChanged="DpEnd_SelectedDateChanged" Background="White"/>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Relatórios -->
+                        <Border Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="📋 Relatórios" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <ListBox x:Name="lstReports" BorderThickness="0" Background="Transparent" FontSize="12" MaxHeight="300" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectionChanged="LstReports_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="10,6" Background="Transparent" CornerRadius="4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="14" Width="20" TextAlignment="Center" Margin="0,0,10,0"/>
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="{Binding Title}" Foreground="{StaticResource TextPrimary}" FontWeight="Medium"/>
+                                                        <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,1,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                                                    <Setter Property="BorderThickness" Value="0,0,0,0"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Opções -->
+                        <Border Style="{StaticResource ModernCard}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="⚙️ Opções" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <CheckBox x:Name="chkShowChart" Content="Mostrar gráfico" Margin="0,0,0,6" FontSize="12" Checked="ChkShowChart_Changed" Unchecked="ChkShowChart_Changed"/>
+                                <CheckBox x:Name="chkGroupData" Content="Agrupar dados" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Botões -->
+                        <Border Style="{StaticResource ModernCard}">
+                            <StackPanel>
+                                <Button x:Name="btnGenerate" Content="▶ Gerar Relatório" Style="{StaticResource PrimaryButton}" Click="BtnGenerate_Click" Height="32"/>
+                                <Button x:Name="btnClearFilters" Content="✕ Limpar Filtros" Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" Click="BtnClearFilters_Click" Height="30" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Conteúdo Principal -->
+        <Grid Grid.Column="1" Background="{StaticResource LightColor}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="White" Padding="16,12,20,12" Effect="{StaticResource ShadowLight}" BorderThickness="0,0,0,1" BorderBrush="{StaticResource BorderColor}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="📊 Relatórios" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        <TextBlock x:Name="txtBreadcrumb" Text="Dashboard / Relatórios" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,16,0">
+                        <Border Style="{StaticResource BadgeStyle}">
+                            <TextBlock x:Name="txtDateRange" Text="Hoje" FontSize="11" Foreground="{StaticResource PrimaryColor}" FontWeight="Medium"/>
+                        </Border>
+                        <Border Style="{StaticResource BadgeStyle}" Margin="8,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" Margin="0,0,4,0" FontSize="11"/>
+                                <TextBlock x:Name="txtTotalRecords" Text="0 registros" FontSize="11" Foreground="{StaticResource PrimaryColor}" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="btnPrint" Style="{StaticResource IconButton}" ToolTip="Imprimir" Click="BtnPrint_Click" Padding="6,4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🖨️" FontSize="13" Margin="0,0,4,0"/>
+                                <TextBlock Text="Imprimir" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="btnExport" Style="{StaticResource IconButton}" ToolTip="Exportar relatório" Margin="0,0,6,0" Padding="6,4">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📄" FontSize="13" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Exportar" FontSize="12"/>
+                                </StackPanel>
+                            </Button.Content>
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Exportar para Excel (.xlsx)" Click="MenuItem_ExportExcel_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="📊" FontSize="14"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Exportar para PDF" Click="MenuItem_ExportPdf_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="📄" FontSize="14"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button x:Name="btnRefresh" Style="{StaticResource IconButton}" ToolTip="Atualizar" Click="BtnRefresh_Click" Padding="6,4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔄" FontSize="13" Margin="0,0,4,0"/>
+                                <TextBlock Text="Atualizar" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Conteúdo com scroll -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16,12,16,12">
+                <StackPanel>
+                    <!-- Resumo Geral -->
+                    <Border Style="{StaticResource ModernCard}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="📈 Resumo Geral" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,12"/>
+                            <WrapPanel x:Name="pnlStats"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Gráfico -->
+                    <Border x:Name="pnlChartContainer" Style="{StaticResource ModernCard}" Margin="0,0,0,16" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="280"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="📊" FontSize="14" Margin="0,0,8,0"/>
+                                <TextBlock Text="Vendas por Hora" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                            </StackPanel>
+                            <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="4" BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                <Canvas x:Name="canvasChart" MinHeight="280" Background="Transparent"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabela de Dados -->
+                    <Border Style="{StaticResource ModernCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="📋" FontSize="14" Margin="0,0,8,0"/>
+                                <TextBlock x:Name="txtReportTitle" Text="Dados do Relatório" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                            </StackPanel>
+                            <Border Grid.Row="1" Background="White" CornerRadius="4" BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                <Grid>
+                                    <DataGrid x:Name="dgReportData"
+                                              Style="{StaticResource ModernDataGrid}"
+                                              AutoGenerateColumns="False"
+                                              EnableRowVirtualization="True"
+                                              EnableColumnVirtualization="True"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling"
+                                              ScrollViewer.CanContentScroll="True"
+                                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                              MinHeight="200"
+                                              MaxHeight="500"
+                                              Visibility="Collapsed"/>
+                                    <Border Grid.Row="1" x:Name="pnlEmpty" Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Visible" CornerRadius="4">
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="📊" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock Text="Nenhum dado disponível" FontSize="14" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Selecione um relatório e clique em 'Gerar Relatório'" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Rodapé com resumo -->
+            <Border Grid.Row="2" Background="White" Padding="16,10,20,10" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderColor}" x:Name="pnlSummary">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💰" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalCash" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Dinheiro" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💳" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalCard" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Cartão" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📱" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalMBWay" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="MBWay" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📲" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalEmola" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Emola" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📲" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalMPesa" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="M-Pesa" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏦" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalPOS" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="POS" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource StatCard}" MinWidth="140" Background="{StaticResource PrimaryLightColor}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📈" FontSize="18" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="txtTotalGeral" Text="MT 0,00" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource SuccessColor}"/>
+                                    <TextBlock Text="Total Geral" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
