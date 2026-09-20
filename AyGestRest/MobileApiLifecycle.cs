@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace AyGestRest
 {
@@ -12,10 +13,27 @@ namespace AyGestRest
         {
             try
             {
+                Dispatcher.BeginInvoke(
+                    new Action(StartMobileApi),
+                    DispatcherPriority.ApplicationIdle);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Mobile API] falha ao agendar inicialização: {ex.Message}");
+            }
+        }
+
+        private void StartMobileApi()
+        {
+            if (_mobileApiServer != null)
+                return;
+
+            try
+            {
                 var port = Environment.GetEnvironmentVariable("AYGEST_MOBILE_API_PORT");
                 _mobileApiServer = new EmbeddedApiServer(string.IsNullOrWhiteSpace(port) ? "5050" : port);
                 _mobileApiServer.Start();
-                Debug.WriteLine("[Mobile API] servidor iniciado.");
+                Debug.WriteLine("[Mobile API] servidor iniciado após inicialização da aplicação.");
             }
             catch (Exception ex)
             {
