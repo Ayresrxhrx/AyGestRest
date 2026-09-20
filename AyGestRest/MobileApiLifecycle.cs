@@ -30,8 +30,7 @@ namespace AyGestRest
 
             try
             {
-                var port = Environment.GetEnvironmentVariable("AYGEST_MOBILE_API_PORT");
-                _mobileApiServer = new EmbeddedApiServer(string.IsNullOrWhiteSpace(port) ? "5050" : port);
+                _mobileApiServer = new EmbeddedApiServer("5050");
                 _mobileApiServer.Start();
                 Debug.WriteLine("[Mobile API] servidor iniciado após inicialização da aplicação.");
             }
