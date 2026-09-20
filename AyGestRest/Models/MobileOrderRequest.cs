@@ -7,6 +7,7 @@ namespace AyGestRest.Models
         public int? TableId { get; set; }
         public int? UserId { get; set; }
         public string? DeviceId { get; set; }
+        public string? ClientRequestId { get; set; }
         public string? Observations { get; set; }
         public List<MobileOrderItemRequest> Items { get; set; } = new();
     }
