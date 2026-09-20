@@ -1,4 +1,4 @@
-﻿using AyGestRest.Data;
+using AyGestRest.Data;
 using AyGestRest.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,16 +11,13 @@ using System.Windows.Media;
 
 namespace AyGestRest.Views
 {
-    // Classe estática global para eventos de mesas (pode colocar num ficheiro separado se quiseres, ex: AppEvents.cs)
-  
-
     public partial class TablesControl : UserControl
     {
         private readonly AyGestRestContext _db = new();
         private List<RestaurantTable> _tables = new();
         private FrameworkElement? _draggingElement;
         private Point _dragStartPosition;
-        private bool _isDragging = false;
+        private bool _isDragging;
         private readonly ScaleTransform _scaleTransform = new(1, 1);
 
         public TablesControl()
@@ -28,15 +25,33 @@ namespace AyGestRest.Views
             InitializeComponent();
             TablesCanvas.LayoutTransform = _scaleTransform;
             Loaded += TablesControl_Loaded;
+            Unloaded += TablesControl_Unloaded;
+            AppEvents.SpecificTableStatusChanged += OnSpecificTableStatusChanged;
         }
-        private void TxtValorRecebido_GotFocus(object sender, RoutedEventArgs e)
+
+        private void TablesControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            // Seleciona todo o texto quando o campo recebe foco
-            if (sender is TextBox textBox)
+            AppEvents.SpecificTableStatusChanged -= OnSpecificTableStatusChanged;
+        }
+
+        private async void OnSpecificTableStatusChanged(int tableId)
+        {
+            try
             {
-                textBox.SelectAll();
+                if (!IsLoaded) return;
+                await Dispatcher.InvokeAsync(async () => await CarregarMesas());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao actualizar mesa {tableId}: {ex.Message}");
             }
         }
+
+        private void TxtValorRecebido_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox) textBox.SelectAll();
+        }
+
         private async void TablesControl_Loaded(object sender, RoutedEventArgs e)
         {
             await CarregarMesas();
@@ -44,7 +59,7 @@ namespace AyGestRest.Views
 
         private async Task CarregarMesas()
         {
-            _tables = await _db.Tables.ToListAsync();
+            _tables = await _db.Tables.AsNoTracking().ToListAsync();
             DrawTables();
         }
 
@@ -62,7 +77,7 @@ namespace AyGestRest.Views
                     Background = GetStatusBrush(table.Status),
                     BorderBrush = table.Selecionado ? Brushes.Gold : Brushes.WhiteSmoke,
                     BorderThickness = new Thickness(table.Selecionado ? 5 : 2),
-                    Cursor = chkModoEdicao.IsChecked == true ? Cursors.Hand : Cursors.Arrow,
+                    Cursor = chkModoEdicao.IsChecked == true ? Cursors.Hand : Cursors.Hand,
                     Tag = table
                 };
 
@@ -96,6 +111,8 @@ namespace AyGestRest.Views
                 tooltipStack.Children.Add(new TextBlock { Text = $"Capacidade: {table.Capacity}" });
                 tooltipStack.Children.Add(new TextBlock { Text = $"Status: {table.Status}" });
                 tooltipStack.Children.Add(new TextBlock { Text = $"Notas: {table.Notes ?? "Nenhuma"}", TextWrapping = TextWrapping.Wrap });
+                if (table.Status == TableStatus.Ocupada)
+                    tooltipStack.Children.Add(new TextBlock { Text = "Venda aberta — clique para abrir", FontWeight = FontWeights.SemiBold });
                 border.ToolTip = new ToolTip { Content = tooltipStack };
 
                 border.MouseLeftButtonUp += Mesa_MouseLeftButtonUp;
@@ -121,21 +138,21 @@ namespace AyGestRest.Views
 
         private void Mesa_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (sender is FrameworkElement element && element.Tag is RestaurantTable table)
-            {
-                if (Keyboard.Modifiers == ModifierKeys.Control)
-                {
-                    table.Selecionado = !table.Selecionado;
-                }
-                else
-                {
-                    foreach (var t in _tables) t.Selecionado = false;
-                    table.Selecionado = true;
-                }
-                DrawTables();
+            if (sender is not FrameworkElement element || element.Tag is not RestaurantTable table) return;
 
-                OnOpenTableCommand?.Invoke(this, table);
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+                table.Selecionado = !table.Selecionado;
+            else
+            {
+                foreach (var t in _tables) t.Selecionado = false;
+                table.Selecionado = true;
             }
+
+            DrawTables();
+
+            // Para mesa ocupada, o POS recebe a mesma mesa e deve carregar a venda aberta existente.
+            // Para mesa livre, o fluxo normal cria/abre uma nova venda no Desktop.
+            OnOpenTableCommand?.Invoke(this, table);
         }
 
         private void Mesa_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -146,7 +163,6 @@ namespace AyGestRest.Views
             if (sender is FrameworkElement element && element.Tag is RestaurantTable table)
             {
                 var menu = new ContextMenu();
-
                 var editar = new MenuItem { Header = "Editar Mesa" };
                 editar.Click += (_, __) => EditarMesa(table);
                 menu.Items.Add(editar);
@@ -154,7 +170,6 @@ namespace AyGestRest.Views
                 var excluir = new MenuItem { Header = "Excluir Mesa" };
                 excluir.Click += async (_, __) => await ExcluirMesa(table);
                 menu.Items.Add(excluir);
-
                 menu.Items.Add(new Separator());
 
                 var statuses = new[] { "Livre", "Ocupada", "Reservada", "Pendente" };
@@ -164,7 +179,6 @@ namespace AyGestRest.Views
                     item.Click += async (_, __) => await MudarStatus(table, s);
                     menu.Items.Add(item);
                 }
-
                 menu.IsOpen = true;
             }
         }
@@ -184,12 +198,10 @@ namespace AyGestRest.Views
 
         private async Task ExcluirMesa(RestaurantTable table)
         {
-            if (MessageBox.Show($"Excluir permanentemente a mesa {table.Number}?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-            {
-                _db.Tables.Remove(table);
-                await _db.SaveChangesAsync();
-                await CarregarMesas();
-            }
+            if (MessageBox.Show($"Excluir permanentemente a mesa {table.Number}?", "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            _db.Tables.Remove(table);
+            await _db.SaveChangesAsync();
+            await CarregarMesas();
         }
 
         private async Task MudarStatus(RestaurantTable table, string statusTexto)
@@ -202,19 +214,14 @@ namespace AyGestRest.Views
                 "Pendente" => TableStatus.Pendente,
                 _ => table.Status
             };
-
             await _db.SaveChangesAsync();
             DrawTables();
-
-            // Notifica todas as telas (POSControl, etc.)
             AppEvents.RaiseSpecificTableStatusChanged(table.Id);
         }
 
-        // Drag & Drop
         private void TablesCanvas_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (chkModoEdicao.IsChecked != true) return;
-
             var pos = e.GetPosition(TablesCanvas);
             var hit = TablesCanvas.InputHitTest(pos) as FrameworkElement;
             if (hit?.Tag is RestaurantTable)
@@ -228,14 +235,11 @@ namespace AyGestRest.Views
         private void TablesCanvas_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDragging || _draggingElement == null) return;
-
             var pos = e.GetPosition(TablesCanvas);
-            double dx = pos.X - _dragStartPosition.X;
-            double dy = pos.Y - _dragStartPosition.Y;
-
+            var dx = pos.X - _dragStartPosition.X;
+            var dy = pos.Y - _dragStartPosition.Y;
             Canvas.SetLeft(_draggingElement, Canvas.GetLeft(_draggingElement) + dx);
             Canvas.SetTop(_draggingElement, Canvas.GetTop(_draggingElement) + dy);
-
             _dragStartPosition = pos;
         }
 
@@ -248,48 +252,40 @@ namespace AyGestRest.Views
                 await _db.SaveChangesAsync();
                 AppEvents.RaiseSpecificTableStatusChanged(table.Id);
             }
-
             _isDragging = false;
             _draggingElement = null;
         }
 
-        // Zoom
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Keyboard.Modifiers != ModifierKeys.Control) return;
             e.Handled = true;
-
-            double scaleFactor = e.Delta > 0 ? 1.1 : 0.9;
+            var scaleFactor = e.Delta > 0 ? 1.1 : 0.9;
             _scaleTransform.ScaleX *= scaleFactor;
             _scaleTransform.ScaleY *= scaleFactor;
         }
 
-        // Organizar automaticamente
         private async void BtnOrganizar_Click(object sender, RoutedEventArgs e)
         {
             const int cols = 4;
             const int spacing = 150;
-            int x = 50, y = 50;
+            const int x = 50;
+            const int y = 50;
             int count = 0;
-
             foreach (var table in _tables)
             {
                 table.PositionX = x + (count % cols) * spacing;
                 table.PositionY = y + (count / cols) * spacing;
                 count++;
             }
-
             await _db.SaveChangesAsync();
             DrawTables();
         }
 
-        // Criação de nova mesa
         private void TablesCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (chkModoEdicao.IsChecked != true) return;
-
-            Point pos = e.GetPosition(TablesCanvas);
-
+            var pos = e.GetPosition(TablesCanvas);
             var window = CriarJanelaCadastro("", "", "", async (num, capStr, notas) =>
             {
                 if (string.IsNullOrWhiteSpace(num) || !int.TryParse(capStr, out int cap))
@@ -297,7 +293,6 @@ namespace AyGestRest.Views
                     MessageBox.Show("Número e capacidade são obrigatórios!", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-
                 var newTable = new RestaurantTable
                 {
                     Number = num,
@@ -308,12 +303,10 @@ namespace AyGestRest.Views
                     Status = TableStatus.Livre,
                     Selecionado = false
                 };
-
                 _db.Tables.Add(newTable);
                 await _db.SaveChangesAsync();
                 await CarregarMesas();
             });
-
             window.ShowDialog();
         }
 
@@ -329,18 +322,17 @@ namespace AyGestRest.Views
             };
 
             var stack = new StackPanel { Margin = new Thickness(20) };
-
             stack.Children.Add(new TextBlock { Text = "Número da Mesa:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
-            var txtNum = new TextBox { Text = numAtual, Margin = new Thickness(0, 0, 0, 15) };
-            stack.Children.Add(txtNum);
+            stack.Children.Add(new TextBox { Text = numAtual, Margin = new Thickness(0, 0, 0, 15) });
+            var txtNum = (TextBox)stack.Children[^1];
 
             stack.Children.Add(new TextBlock { Text = "Capacidade:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
-            var txtCap = new TextBox { Text = capAtual, Margin = new Thickness(0, 0, 0, 15) };
-            stack.Children.Add(txtCap);
+            stack.Children.Add(new TextBox { Text = capAtual, Margin = new Thickness(0, 0, 0, 15) });
+            var txtCap = (TextBox)stack.Children[^1];
 
             stack.Children.Add(new TextBlock { Text = "Notas:", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 5) });
-            var txtNotas = new TextBox { Text = notasAtual, Height = 100, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 0, 0, 15) };
-            stack.Children.Add(txtNotas);
+            stack.Children.Add(new TextBox { Text = notasAtual, Height = 100, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(0, 0, 0, 15) });
+            var txtNotas = (TextBox)stack.Children[^1];
 
             var btnSave = new Button { Content = "Salvar", Height = 40, Margin = new Thickness(0, 20, 0, 0) };
             btnSave.Click += (_, __) =>
@@ -349,12 +341,10 @@ namespace AyGestRest.Views
                 window.Close();
             };
             stack.Children.Add(btnSave);
-
             window.Content = new ScrollViewer { Content = stack };
             return window;
         }
 
-        // Evento para abrir comanda no POS
         public event EventHandler<RestaurantTable>? OnOpenTableCommand;
     }
 }
