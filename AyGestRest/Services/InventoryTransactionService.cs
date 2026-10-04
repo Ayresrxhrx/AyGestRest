@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace AyGestRest.Services
 {
     /// <summary>
-    /// Mantém o stock sincronizado com vendas e devoluções.
-    /// As operações podem ser executadas isoladamente ou dentro de uma transação externa,
-    /// permitindo que pagamento + stock sejam confirmados atomicamente.
+    /// Núcleo transaccional de stock. Todas as operações de venda/devolução podem participar
+    /// de uma transação externa, evitando que pagamento, stock e factura fiquem em estados diferentes.
+    ///
+    /// As baixas usam UPDATE condicional no banco (Stock >= quantidade) para impedir que dois
+    /// terminais consumam simultaneamente mais stock do que o disponível.
     /// </summary>
     public sealed class InventoryTransactionService
     {
@@ -32,7 +34,9 @@ namespace AyGestRest.Services
 
         public async Task DeductForSaleInCurrentTransactionAsync(int orderId, int? userId = null, CancellationToken cancellationToken = default)
         {
-            var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            var order = await _db.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
             if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
@@ -57,13 +61,21 @@ namespace AyGestRest.Services
 
                 if (!product.IsComposite && product.TrackInventory)
                 {
-                    if (product.Stock < quantity)
-                        throw new InvalidOperationException($"Stock insuficiente para {product.Name}. Disponível: {product.Stock:N2}.");
+                    var updated = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                        UPDATE Products
+                        SET Stock = Stock - {quantity}
+                        WHERE Id = {product.Id}
+                          AND TrackInventory = 1
+                          AND Stock >= {quantity};", cancellationToken);
 
+                    if (updated != 1)
+                        throw new InvalidOperationException($"Stock insuficiente ou alterado simultaneamente para {product.Name}.");
+
+                    var newStock = product.Stock - quantity;
                     var previous = product.Stock;
-                    product.Stock -= quantity;
-                    AddInventoryMovement(product.Id, previous, product.Stock, item.Quantity, orderId, responsibleUserId, "Saída", "Venda");
-                    AddStockMovement(product.Id, (int)Math.Ceiling(quantity), product.Stock, "Saída");
+                    product.Stock = newStock;
+                    AddInventoryMovement(product.Id, previous, newStock, item.Quantity, orderId, responsibleUserId, "Saída", "Venda");
+                    AddStockMovement(product.Id, (int)Math.Ceiling(quantity), newStock, "Saída");
                 }
 
                 if (product.IsComposite)
@@ -78,12 +90,23 @@ namespace AyGestRest.Services
                             throw new InvalidOperationException($"Receita inválida para {product.Name}: ingrediente inexistente.");
 
                         var required = recipeItem.QuantityUsed * quantity;
-                        if (recipeItem.Ingredient.Stock < required)
-                            throw new InvalidOperationException($"Ingrediente insuficiente: {recipeItem.Ingredient.Name}. Necessário {required:N2} {recipeItem.Ingredient.Unit}, disponível {recipeItem.Ingredient.Stock:N2}.");
+                        if (required <= 0) continue;
 
-                        var previousIngredientStock = recipeItem.Ingredient.Stock;
-                        recipeItem.Ingredient.Stock -= required;
-                        recipeItem.Ingredient.Quantity = Math.Max(0, (int)Math.Floor(recipeItem.Ingredient.Stock));
+                        var ingredient = recipeItem.Ingredient;
+                        var updated = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                            UPDATE Ingredients
+                            SET Stock = Stock - {required},
+                                Quantity = CAST(MAX(0, Stock - {required}) AS INTEGER)
+                            WHERE Id = {ingredient.Id}
+                              AND Stock >= {required};", cancellationToken);
+
+                        if (updated != 1)
+                            throw new InvalidOperationException($"Ingrediente insuficiente ou alterado simultaneamente: {ingredient.Name}. Necessário {required:N2} {ingredient.Unit}, disponível {ingredient.Stock:N2}.");
+
+                        var previousIngredientStock = ingredient.Stock;
+                        var newIngredientStock = previousIngredientStock - required;
+                        ingredient.Stock = newIngredientStock;
+                        ingredient.Quantity = Math.Max(0, (int)Math.Floor(newIngredientStock));
 
                         _db.InventoryMovements.Add(new InventoryMovement
                         {
@@ -91,9 +114,9 @@ namespace AyGestRest.Services
                             MovementType = "Saída",
                             Quantity = (int)Math.Ceiling(Math.Abs(required)),
                             PreviousStock = previousIngredientStock,
-                            NewStock = recipeItem.Ingredient.Stock,
+                            NewStock = newIngredientStock,
                             Reason = "Venda - Ingrediente",
-                            Notes = $"Pedido #{orderId}; Ingrediente #{recipeItem.IngredientId}",
+                            Notes = $"Pedido #{orderId}; Ingrediente #{ingredient.Id}",
                             UserId = responsibleUserId,
                             CreatedAt = DateTime.Now
                         });
@@ -121,7 +144,9 @@ namespace AyGestRest.Services
 
         public async Task RestoreForSaleInCurrentTransactionAsync(int orderId, int? userId = null, CancellationToken cancellationToken = default)
         {
-            var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            var order = await _db.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
             if (!await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
@@ -135,6 +160,7 @@ namespace AyGestRest.Services
             foreach (var item in order.Items)
             {
                 if (item.Quantity <= 0) continue;
+
                 var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
                 if (product == null) continue;
 
@@ -149,13 +175,34 @@ namespace AyGestRest.Services
 
                 if (product.IsComposite)
                 {
-                    var recipe = await _db.ProductIngredients.Include(pi => pi.Ingredient).Where(pi => pi.ProductId == product.Id).ToListAsync(cancellationToken);
+                    var recipe = await _db.ProductIngredients
+                        .Include(pi => pi.Ingredient)
+                        .Where(pi => pi.ProductId == product.Id)
+                        .ToListAsync(cancellationToken);
+
                     foreach (var recipeItem in recipe)
                     {
                         if (recipeItem.Ingredient == null) continue;
+
                         var restored = recipeItem.QuantityUsed * quantity;
-                        recipeItem.Ingredient.Stock += restored;
-                        recipeItem.Ingredient.Quantity = Math.Max(0, (int)Math.Floor(recipeItem.Ingredient.Stock));
+                        if (restored <= 0) continue;
+
+                        var ingredient = recipeItem.Ingredient;
+                        ingredient.Stock += restored;
+                        ingredient.Quantity = Math.Max(0, (int)Math.Floor(ingredient.Stock));
+
+                        _db.InventoryMovements.Add(new InventoryMovement
+                        {
+                            ProductId = product.Id,
+                            MovementType = "Entrada",
+                            Quantity = (int)Math.Ceiling(restored),
+                            PreviousStock = ingredient.Stock - restored,
+                            NewStock = ingredient.Stock,
+                            Reason = "Devolução - Ingrediente",
+                            Notes = $"Pedido #{orderId}; Ingrediente #{ingredient.Id}",
+                            UserId = responsibleUserId,
+                            CreatedAt = DateTime.Now
+                        });
                     }
                 }
             }
