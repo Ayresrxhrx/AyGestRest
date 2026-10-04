@@ -8,23 +8,25 @@ namespace AyGestRest
     {
         static MainWindow()
         {
-            EventManager.RegisterClassHandler(
-                typeof(MainWindow),
-                Keyboard.KeyDownEvent,
-                new KeyEventHandler(HandleProductionShortcut));
+            EventManager.RegisterClassHandler(typeof(MainWindow), Keyboard.KeyDownEvent, new KeyEventHandler(HandleProductionShortcut));
         }
 
         private static void HandleProductionShortcut(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.P || Keyboard.Modifiers != (ModifierKeys.Control | ModifierKeys.Shift))
-                return;
+            if (sender is not MainWindow owner) return;
 
-            if (sender is not MainWindow owner)
+            if (e.Key == Key.P && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+            {
+                new ProductionCenterWindow { Owner = owner }.ShowDialog();
+                e.Handled = true;
                 return;
+            }
 
-            var window = new ProductionCenterWindow { Owner = owner };
-            window.ShowDialog();
-            e.Handled = true;
+            if (e.Key == Key.F && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+            {
+                new FaturasWindow { Owner = owner }.ShowDialog();
+                e.Handled = true;
+            }
         }
     }
 }
