@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AyGestRest
@@ -11,32 +12,38 @@ namespace AyGestRest
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
 
-        public ApiClient(string serverIp, string port = "5050")
+        public ApiClient(string serverIp, string port = "5050", string? terminalId = null, string? terminalName = null)
         {
-            _baseUrl = $"http://{serverIp}:{port}";
+            _baseUrl = serverIp.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || serverIp.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                ? serverIp.TrimEnd('/')
+                : $"http://{serverIp}:{port}";
+
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(_baseUrl),
-                Timeout = TimeSpan.FromSeconds(5)
+                BaseAddress = new Uri(_baseUrl + "/"),
+                Timeout = TimeSpan.FromSeconds(15)
             };
 
-            // Add default headers
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "AyGestRest-Client");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "AyGestPOS-Desktop");
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Terminal-Id", string.IsNullOrWhiteSpace(terminalId) ? Environment.MachineName : terminalId);
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("X-Terminal-Name", string.IsNullOrWhiteSpace(terminalName) ? Environment.MachineName : terminalName);
         }
 
-        public async Task<T> GetAsync<T>(string endpoint)
+        public ApiClient(AppConfig config)
+            : this(config.GetApiBaseUrl(), config.ServerPort, config.TerminalId, config.TerminalName)
+        {
+        }
+
+        public async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _httpClient.GetAsync(endpoint);
+                using var response = await _httpClient.GetAsync(endpoint, cancellationToken);
                 response.EnsureSuccessStatusCode();
-
-                string json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                string json = await response.Content.ReadAsStringAsync(cancellationToken);
+                var result = JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return result ?? throw new InvalidOperationException("O servidor devolveu uma resposta vazia.");
             }
             catch (Exception ex)
             {
@@ -44,21 +51,17 @@ namespace AyGestRest
             }
         }
 
-        public async Task<TResponse> PostAsync<TRequest, TResponse>(string endpoint, TRequest data)
+        public async Task<TResponse> PostAsync<TRequest, TResponse>(string endpoint, TRequest data, CancellationToken cancellationToken = default)
         {
             try
             {
                 string json = JsonSerializer.Serialize(data);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync(endpoint, content);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
                 response.EnsureSuccessStatusCode();
-
-                string responseJson = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<TResponse>(responseJson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                string responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+                var result = JsonSerializer.Deserialize<TResponse>(responseJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return result ?? throw new InvalidOperationException("O servidor devolveu uma resposta vazia.");
             }
             catch (Exception ex)
             {
@@ -66,11 +69,11 @@ namespace AyGestRest
             }
         }
 
-        public async Task<bool> TestConnection()
+        public async Task<bool> TestConnection(CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/health");
+                using var response = await _httpClient.GetAsync("api/health", cancellationToken);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -79,9 +82,6 @@ namespace AyGestRest
             }
         }
 
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
-        }
+        public void Dispose() => _httpClient.Dispose();
     }
 }
