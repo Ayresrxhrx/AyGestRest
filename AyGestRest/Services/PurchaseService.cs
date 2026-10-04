@@ -22,6 +22,9 @@ namespace AyGestRest.Services
             if (string.Equals(purchase.Status, "Cancelada", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Não é possível receber uma compra cancelada.");
 
+            var effectiveUserId = userId ?? await _db.Users.Where(u => u.IsActive).OrderBy(u => u.Id).Select(u => (int?)u.Id).FirstOrDefaultAsync(cancellationToken);
+            if (!effectiveUserId.HasValue) throw new InvalidOperationException("Não existe utilizador activo para registar a entrada de stock.");
+
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -45,7 +48,7 @@ namespace AyGestRest.Services
                         NewStock = product.Stock,
                         Reason = "Compra recebida",
                         Notes = purchase.PurchaseNumber,
-                        UserId = userId ?? 0,
+                        UserId = effectiveUserId.Value,
                         CreatedAt = DateTime.Now
                     });
                 }
