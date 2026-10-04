@@ -34,6 +34,8 @@ namespace AyGestRest.Services
             if (orderId <= 0) throw new ArgumentOutOfRangeException(nameof(orderId));
             if (string.IsNullOrWhiteSpace(terminalId)) throw new InvalidOperationException("Terminal não identificado.");
             if (payments.Count == 0) throw new InvalidOperationException("Indique pelo menos um método de pagamento.");
+            if (!cashRegisterId.HasValue || cashRegisterId.Value <= 0)
+                throw new InvalidOperationException("É necessário ter um caixa aberto para finalizar uma venda.");
 
             var order = await _db.Orders
                 .Include(o => o.Items)
@@ -48,38 +50,59 @@ namespace AyGestRest.Services
             if (total <= 0) throw new InvalidOperationException("O pedido não possui valor a pagar.");
 
             var alreadyPaid = order.Payments.Sum(p => p.Amount > 0 ? p.Amount : p.Valor ?? 0m);
-            var requested = payments.Sum(p => p.Amount);
             var due = Math.Max(0m, total - alreadyPaid);
 
-            if (requested < due)
-                throw new InvalidOperationException($"Pagamento insuficiente. Faltam {(due - requested):N2} MT.");
+            var requested = 0m;
+            var normalizedPayments = new List<NormalizedPayment>();
+            var remainingDue = due;
+
+            foreach (var part in payments)
+            {
+                if (part.Amount <= 0) throw new InvalidOperationException("Existe um pagamento com valor inválido.");
+                if (string.IsNullOrWhiteSpace(part.Method)) throw new InvalidOperationException("Existe um pagamento sem método.");
+
+                var applied = Math.Min(part.Amount, remainingDue);
+                requested += part.Amount;
+                if (applied > 0)
+                {
+                    normalizedPayments.Add(new NormalizedPayment(part, applied));
+                    remainingDue -= applied;
+                }
+            }
+
+            if (remainingDue > 0)
+                throw new InvalidOperationException($"Pagamento insuficiente. Faltam {remainingDue:N2} MT.");
 
             var change = Math.Max(0m, requested - due);
             if (change > 0 && !payments.Any(p => IsCash(p.Method)))
                 throw new InvalidOperationException("O troco só pode ser calculado quando existe pagamento em dinheiro.");
 
-            // A estrutura de facturação é preparada antes da transação para que a criação
-            // das tabelas nunca faça parte do commit financeiro da venda.
+            var cashTendered = payments
+                .Where(p => IsCash(p.Method))
+                .Sum(p => p.Amount);
+
+            if (change > cashTendered)
+                throw new InvalidOperationException("O troco calculado excede o valor entregue em dinheiro.");
+
+            // Garante que a infraestrutura de facturação existe antes da transação financeira.
             var faturacaoSchema = new FaturacaoService(_db);
             await faturacaoSchema.EnsureSchemaAsync(cancellationToken);
 
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                // 1. Verifica/baixa stock e ingredientes na mesma transação.
+                // 1. Stock e ingredientes.
                 await _inventory.DeductForSaleInCurrentTransactionAsync(orderId, userId, cancellationToken);
 
-                // 2. Regista todos os pagamentos.
-                foreach (var part in payments)
+                // 2. Regista apenas os valores realmente aplicados à dívida.
+                foreach (var normalized in normalizedPayments)
                 {
-                    if (part.Amount <= 0) throw new InvalidOperationException("Existe um pagamento com valor inválido.");
-                    if (string.IsNullOrWhiteSpace(part.Method)) throw new InvalidOperationException("Existe um pagamento sem método.");
-
+                    var part = normalized.Source;
                     _db.Payments.Add(new Payment
                     {
                         OrderId = orderId,
-                        Amount = part.Amount,
-                        Valor = part.Amount,
+                        Amount = normalized.AppliedAmount,
+                        Valor = normalized.AppliedAmount,
                         Type = ParsePaymentType(part.Method),
                         TipoPagamento = part.Method.Trim(),
                         Reference = part.Reference?.Trim() ?? string.Empty,
@@ -99,30 +122,27 @@ namespace AyGestRest.Services
 
                 await _db.SaveChangesAsync(cancellationToken);
 
-                // 3. A factura é emitida ANTES do commit e usa a mesma transação.
-                // Se a factura falhar, pagamento, stock e caixa também sofrem rollback.
+                // 3. Factura dentro da mesma transação.
                 var invoice = await _invoice.EmitirNaTransacaoActualAsync(order, terminalId, cancellationToken);
 
-                // 4. Caixa é gravado na mesma transação SQLite/EF.
-                if (cashRegisterId.HasValue)
-                {
-                    await AddCashMovementsInCurrentTransactionAsync(
-                        cashRegisterId.Value,
-                        payments,
-                        Math.Min(requested, due),
-                        userId,
-                        orderId,
-                        cancellationToken);
-                }
+                // 4. Caixa: entradas reais e troco, dentro da mesma transação.
+                await AddCashMovementsInCurrentTransactionAsync(
+                    cashRegisterId.Value,
+                    normalizedPayments,
+                    cashTendered,
+                    change,
+                    userId,
+                    orderId,
+                    cancellationToken);
 
-                // 5. Auditoria fica dentro da mesma transação.
+                // 5. Auditoria na mesma transação.
                 await AddAuditInCurrentTransactionAsync(
                     terminalId,
                     userId,
                     "SALE_COMPLETED",
                     "Order",
                     orderId.ToString(CultureInfo.InvariantCulture),
-                    $"Total={total:N2};Paid={requested:N2};Change={change:N2};Invoice={invoice.Numero}",
+                    $"Total={total:N2};Paid={due:N2};Tendered={requested:N2};Change={change:N2};Invoice={invoice.Numero}",
                     cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
@@ -130,9 +150,15 @@ namespace AyGestRest.Services
                 return new SaleCompletionResult(
                     orderId,
                     total,
-                    alreadyPaid + requested,
+                    alreadyPaid + due,
                     change,
-                    payments.ToArray());
+                    normalizedPayments.Select(p => new PaymentPart
+                    {
+                        Amount = p.AppliedAmount,
+                        Method = p.Source.Method,
+                        Reference = p.Source.Reference,
+                        Notes = p.Source.Notes
+                    }).ToArray());
             }
             catch
             {
@@ -143,8 +169,9 @@ namespace AyGestRest.Services
 
         private async Task AddCashMovementsInCurrentTransactionAsync(
             int cashRegisterId,
-            IReadOnlyCollection<PaymentPart> payments,
-            decimal amountApplied,
+            IReadOnlyCollection<NormalizedPayment> payments,
+            decimal cashTendered,
+            decimal change,
             int? userId,
             int orderId,
             CancellationToken cancellationToken)
@@ -166,31 +193,57 @@ namespace AyGestRest.Services
                 if (Convert.ToInt32(status, CultureInfo.InvariantCulture) != 1) throw new InvalidOperationException("O caixa está fechado.");
             }
 
-            var remainingApplied = amountApplied;
-            foreach (var part in payments)
+            // Regista cada pagamento aplicado para relatórios, mas só o dinheiro afecta o saldo físico da gaveta.
+            foreach (var payment in payments)
             {
-                if (remainingApplied <= 0) break;
-                var applied = Math.Min(part.Amount, remainingApplied);
-                if (applied <= 0) continue;
-
                 await using var insert = connection.CreateCommand();
                 insert.Transaction = transaction;
                 insert.CommandText = "INSERT INTO AyGestCashMovements (CashRegisterId,Type,Amount,PaymentMethod,Reference,Notes,OperatorId,CreatedAt) VALUES ($register,'VENDA',$amount,$method,$reference,$notes,$operator,$created);";
                 Add(insert, "$register", cashRegisterId);
-                Add(insert, "$amount", applied);
-                Add(insert, "$method", part.Method.Trim());
-                Add(insert, "$reference", part.Reference?.Trim() ?? string.Empty);
+                Add(insert, "$amount", payment.AppliedAmount);
+                Add(insert, "$method", payment.Source.Method.Trim());
+                Add(insert, "$reference", payment.Source.Reference?.Trim() ?? string.Empty);
                 Add(insert, "$notes", $"Pedido #{orderId}");
                 Add(insert, "$operator", userId);
                 Add(insert, "$created", DateTime.Now.ToString("O"));
                 await insert.ExecuteNonQueryAsync(cancellationToken);
-                remainingApplied -= applied;
             }
 
+            // A gaveta recebe o dinheiro efectivamente entregue pelo cliente.
+            // O troco sai da gaveta, logo o impacto líquido no ExpectedAmount é cashTendered - change.
+            if (cashTendered > 0)
+            {
+                await using var cashIn = connection.CreateCommand();
+                cashIn.Transaction = transaction;
+                cashIn.CommandText = "INSERT INTO AyGestCashMovements (CashRegisterId,Type,Amount,PaymentMethod,Reference,Notes,OperatorId,CreatedAt) VALUES ($register,'ENTRADA',$amount,'Dinheiro',$reference,$notes,$operator,$created);";
+                Add(cashIn, "$register", cashRegisterId);
+                Add(cashIn, "$amount", cashTendered);
+                Add(cashIn, "$reference", $"Pedido #{orderId}");
+                Add(cashIn, "$notes", "Dinheiro recebido da venda");
+                Add(cashIn, "$operator", userId);
+                Add(cashIn, "$created", DateTime.Now.ToString("O"));
+                await cashIn.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            if (change > 0)
+            {
+                await using var cashOut = connection.CreateCommand();
+                cashOut.Transaction = transaction;
+                cashOut.CommandText = "INSERT INTO AyGestCashMovements (CashRegisterId,Type,Amount,PaymentMethod,Reference,Notes,OperatorId,CreatedAt) VALUES ($register,'SANGRIA',$amount,'Dinheiro',$reference,$notes,$operator,$created);";
+                Add(cashOut, "$register", cashRegisterId);
+                Add(cashOut, "$amount", change);
+                Add(cashOut, "$reference", $"Troco Pedido #{orderId}");
+                Add(cashOut, "$notes", "Troco entregue ao cliente");
+                Add(cashOut, "$operator", userId);
+                Add(cashOut, "$created", DateTime.Now.ToString("O"));
+                await cashOut.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            var cashNet = cashTendered - change;
             await using var update = connection.CreateCommand();
             update.Transaction = transaction;
             update.CommandText = "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount+$amount WHERE Id=$id AND Status=1;";
-            Add(update, "$amount", amountApplied);
+            Add(update, "$amount", cashNet);
             Add(update, "$id", cashRegisterId);
             if (await update.ExecuteNonQueryAsync(cancellationToken) == 0)
                 throw new InvalidOperationException("O caixa deixou de estar aberto durante a finalização da venda.");
@@ -244,6 +297,8 @@ namespace AyGestRest.Services
             command.Parameters.Add(p);
         }
     }
+
+    private sealed record NormalizedPayment(PaymentPart Source, decimal AppliedAmount);
 
     public sealed record SaleCompletionResult(
         int OrderId,
