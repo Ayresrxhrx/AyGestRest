@@ -16,17 +16,13 @@ namespace AyGestRest.Services
 
         public async Task DeductForSaleAsync(int orderId, int? userId = null, CancellationToken cancellationToken = default)
         {
-            var order = await _db.Orders
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
-            var alreadyDeducted = await _db.InventoryMovements
-                .AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken);
-
-            if (alreadyDeducted)
+            if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
                 throw new InvalidOperationException($"O stock do pedido #{orderId} já foi processado.");
 
+            int responsibleUserId = userId ?? order.UserId;
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -34,9 +30,7 @@ namespace AyGestRest.Services
                 {
                     if (item.Quantity <= 0) continue;
 
-                    var product = await _db.Products
-                        .Include(p => p.ProductIngredients)
-                        .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
+                    var product = await _db.Products.Include(p => p.ProductIngredients).FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
                         ?? throw new InvalidOperationException($"Produto do item {item.Id} não encontrado.");
 
                     if (!product.Active)
@@ -51,20 +45,14 @@ namespace AyGestRest.Services
 
                         var previous = product.Stock;
                         product.Stock -= quantity;
-
-                        AddInventoryMovement(product, previous, product.Stock, item, orderId, userId, "Saída");
+                        AddInventoryMovement(product.Id, previous, product.Stock, item.Quantity, orderId, responsibleUserId, "Saída", "Venda");
                         AddStockMovement(product.Id, (int)Math.Ceiling(quantity), product.Stock, "Saída");
                     }
 
                     if (product.IsComposite)
                     {
-                        var recipe = await _db.ProductIngredients
-                            .Include(pi => pi.Ingredient)
-                            .Where(pi => pi.ProductId == product.Id)
-                            .ToListAsync(cancellationToken);
-
-                        if (recipe.Count == 0)
-                            throw new InvalidOperationException($"O produto composto {product.Name} não possui receita.");
+                        var recipe = await _db.ProductIngredients.Include(pi => pi.Ingredient).Where(pi => pi.ProductId == product.Id).ToListAsync(cancellationToken);
+                        if (recipe.Count == 0) throw new InvalidOperationException($"O produto composto {product.Name} não possui receita.");
 
                         foreach (var recipeItem in recipe)
                         {
@@ -93,32 +81,23 @@ namespace AyGestRest.Services
 
         public async Task RestoreForSaleAsync(int orderId, int? userId = null, CancellationToken cancellationToken = default)
         {
-            var order = await _db.Orders
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
-            var deducted = await _db.InventoryMovements
-                .AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken);
-
-            if (!deducted)
+            if (!await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
                 throw new InvalidOperationException($"O stock do pedido #{orderId} não foi baixado e não pode ser restaurado.");
 
-            var alreadyRestored = await _db.InventoryMovements
-                .AnyAsync(m => m.Reason == "Devolução" && m.Notes == $"Pedido #{orderId}", cancellationToken);
-
-            if (alreadyRestored)
+            if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Devolução" && m.Notes == $"Pedido #{orderId}", cancellationToken))
                 throw new InvalidOperationException($"O stock do pedido #{orderId} já foi restaurado.");
 
+            int responsibleUserId = userId ?? order.UserId;
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 foreach (var item in order.Items)
                 {
                     if (item.Quantity <= 0) continue;
-
-                    var product = await _db.Products
-                        .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
+                    var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
                     if (product == null) continue;
 
                     var quantity = Convert.ToDecimal(item.Quantity);
@@ -126,17 +105,13 @@ namespace AyGestRest.Services
                     {
                         var previous = product.Stock;
                         product.Stock += quantity;
-                        AddInventoryMovement(product, previous, product.Stock, item, orderId, userId, "Entrada", "Devolução");
+                        AddInventoryMovement(product.Id, previous, product.Stock, item.Quantity, orderId, responsibleUserId, "Entrada", "Devolução");
                         AddStockMovement(product.Id, (int)Math.Ceiling(quantity), product.Stock, "Entrada");
                     }
 
                     if (product.IsComposite)
                     {
-                        var recipe = await _db.ProductIngredients
-                            .Include(pi => pi.Ingredient)
-                            .Where(pi => pi.ProductId == product.Id)
-                            .ToListAsync(cancellationToken);
-
+                        var recipe = await _db.ProductIngredients.Include(pi => pi.Ingredient).Where(pi => pi.ProductId == product.Id).ToListAsync(cancellationToken);
                         foreach (var recipeItem in recipe)
                         {
                             if (recipeItem.Ingredient == null) continue;
@@ -157,18 +132,18 @@ namespace AyGestRest.Services
             }
         }
 
-        private void AddInventoryMovement(Product product, decimal previous, decimal next, OrderItem item, int orderId, int? userId, string type, string? reason = null)
+        private void AddInventoryMovement(int productId, decimal previous, decimal next, decimal quantity, int orderId, int userId, string type, string reason)
         {
             _db.InventoryMovements.Add(new InventoryMovement
             {
-                ProductId = product.Id,
+                ProductId = productId,
                 MovementType = type,
-                Quantity = (int)Math.Ceiling(Math.Abs(Convert.ToDecimal(item.Quantity))),
+                Quantity = (int)Math.Ceiling(Math.Abs(quantity)),
                 PreviousStock = previous,
                 NewStock = next,
-                Reason = reason ?? "Venda",
+                Reason = reason,
                 Notes = $"Pedido #{orderId}",
-                UserId = userId ?? 0,
+                UserId = userId,
                 CreatedAt = DateTime.Now
             });
         }
