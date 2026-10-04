@@ -6,26 +6,19 @@ using System.Text.Json;
 
 namespace AyGestRest.Services
 {
-    /// <summary>
-    /// Núcleo transacional do AyGest POS. Mantém as operações que precisam de
-    /// consistência fora da UI e prepara a aplicação para vários terminais.
-    /// </summary>
     public sealed class ProductionPlatformService
     {
         private readonly string _databasePath;
 
         public ProductionPlatformService(string? databasePath = null)
         {
-            _databasePath = databasePath ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "AyGestRest", "AyGestRest.db");
+            _databasePath = databasePath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AyGestRest", "AyGestRest.db");
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken = default)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_databasePath)!);
             await using var connection = await OpenAsync(cancellationToken);
-
             await ExecuteAsync(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=15000;", cancellationToken);
 
             const string sql = """
@@ -41,7 +34,6 @@ namespace AyGestRest.Services
                     CreatedAt TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestTerminals_LastSeenAt ON AyGestTerminals(LastSeenAt);
-
                 CREATE TABLE IF NOT EXISTS AyGestCashRegisters (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     TerminalId TEXT NOT NULL,
@@ -56,7 +48,6 @@ namespace AyGestRest.Services
                     Notes TEXT NOT NULL DEFAULT ''
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestCashRegisters_Terminal ON AyGestCashRegisters(TerminalId, Status);
-
                 CREATE TABLE IF NOT EXISTS AyGestCashMovements (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     CashRegisterId INTEGER NOT NULL,
@@ -70,7 +61,6 @@ namespace AyGestRest.Services
                     FOREIGN KEY(CashRegisterId) REFERENCES AyGestCashRegisters(Id) ON DELETE CASCADE
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestCashMovements_Register ON AyGestCashMovements(CashRegisterId, CreatedAt);
-
                 CREATE TABLE IF NOT EXISTS AyGestPaymentMethods (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Code TEXT NOT NULL UNIQUE,
@@ -79,7 +69,6 @@ namespace AyGestRest.Services
                     RequiresReference INTEGER NOT NULL DEFAULT 0,
                     SortOrder INTEGER NOT NULL DEFAULT 0
                 );
-
                 CREATE TABLE IF NOT EXISTS AyGestDocumentSeries (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Code TEXT NOT NULL UNIQUE,
@@ -88,7 +77,6 @@ namespace AyGestRest.Services
                     Year INTEGER NOT NULL,
                     IsActive INTEGER NOT NULL DEFAULT 1
                 );
-
                 CREATE TABLE IF NOT EXISTS AyGestOfflineQueue (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     OperationId TEXT NOT NULL UNIQUE,
@@ -102,7 +90,6 @@ namespace AyGestRest.Services
                     ProcessedAt TEXT NULL
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestOfflineQueue_Status ON AyGestOfflineQueue(Status, CreatedAt);
-
                 CREATE TABLE IF NOT EXISTS AyGestAuditTrail (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     UserId INTEGER NULL,
@@ -115,7 +102,6 @@ namespace AyGestRest.Services
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestAuditTrail_CreatedAt ON AyGestAuditTrail(CreatedAt);
                 CREATE INDEX IF NOT EXISTS IX_AyGestAuditTrail_Entity ON AyGestAuditTrail(EntityName, EntityId);
-
                 CREATE TABLE IF NOT EXISTS AyGestPriceHistory (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ProductId INTEGER NOT NULL,
@@ -125,7 +111,6 @@ namespace AyGestRest.Services
                     Reason TEXT NOT NULL DEFAULT '',
                     CreatedAt TEXT NOT NULL
                 );
-
                 CREATE TABLE IF NOT EXISTS AyGestStockReservations (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ProductId INTEGER NOT NULL,
@@ -136,7 +121,6 @@ namespace AyGestRest.Services
                     ReleasedAt TEXT NULL
                 );
                 CREATE INDEX IF NOT EXISTS IX_AyGestStockReservations_Product ON AyGestStockReservations(ProductId, Status);
-
                 CREATE TABLE IF NOT EXISTS AyGestBackups (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     FilePath TEXT NOT NULL,
@@ -156,24 +140,19 @@ namespace AyGestRest.Services
         {
             if (string.IsNullOrWhiteSpace(terminalId)) throw new ArgumentException("TerminalId é obrigatório.", nameof(terminalId));
             if (openingAmount < 0) throw new ArgumentOutOfRangeException(nameof(openingAmount));
-
             await using var connection = await OpenAsync(cancellationToken);
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-
             await using (var check = connection.CreateCommand())
             {
                 check.Transaction = transaction;
                 check.CommandText = "SELECT Id FROM AyGestCashRegisters WHERE TerminalId=$terminal AND Status=1 LIMIT 1;";
                 Add(check, "$terminal", terminalId);
-                if (await check.ExecuteScalarAsync(cancellationToken) is not null)
-                    throw new InvalidOperationException("Já existe um caixa aberto neste terminal.");
+                if (await check.ExecuteScalarAsync(cancellationToken) is not null) throw new InvalidOperationException("Já existe um caixa aberto neste terminal.");
             }
-
             await using var command = connection.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "INSERT INTO AyGestCashRegisters (TerminalId,OperatorId,OpenedAt,OpeningAmount,ExpectedAmount,Status,Notes) VALUES ($terminal,$operator,$opened,$amount,$amount,1,$notes); SELECT last_insert_rowid();";
-            Add(command, "$terminal", terminalId); Add(command, "$operator", operatorId); Add(command, "$opened", DateTime.Now.ToString("O"));
-            Add(command, "$amount", openingAmount); Add(command, "$notes", notes?.Trim() ?? string.Empty);
+            Add(command, "$terminal", terminalId); Add(command, "$operator", operatorId); Add(command, "$opened", DateTime.Now.ToString("O")); Add(command, "$amount", openingAmount); Add(command, "$notes", notes?.Trim() ?? string.Empty);
             var id = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
             await transaction.CommitAsync(cancellationToken);
             return id;
@@ -185,46 +164,58 @@ namespace AyGestRest.Services
             if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             if (string.IsNullOrWhiteSpace(type)) throw new ArgumentException("Tipo de movimento é obrigatório.", nameof(type));
 
+            var normalizedType = type.Trim().ToUpperInvariant();
+            var isExit = normalizedType is "SAIDA" or "SANGRIA" or "DEVOLUCAO" or "REFUND";
+            var isEntry = normalizedType is "ENTRADA" or "REFORCO" or "DEPOSITO";
+            if (!isExit && !isEntry) throw new ArgumentException("Tipo de movimento de caixa inválido.", nameof(type));
+
             await using var connection = await OpenAsync(cancellationToken);
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
 
+            decimal expected;
             await using (var check = connection.CreateCommand())
             {
                 check.Transaction = transaction;
-                check.CommandText = "SELECT Status FROM AyGestCashRegisters WHERE Id=$id LIMIT 1;";
+                check.CommandText = "SELECT Status, ExpectedAmount FROM AyGestCashRegisters WHERE Id=$id LIMIT 1;";
                 Add(check, "$id", cashRegisterId);
-                var status = await check.ExecuteScalarAsync(cancellationToken);
-                if (status is null) throw new InvalidOperationException("Caixa não encontrado.");
-                if (Convert.ToInt32(status, CultureInfo.InvariantCulture) != 1) throw new InvalidOperationException("O caixa está fechado.");
+                await using var reader = await check.ExecuteReaderAsync(cancellationToken);
+                if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Caixa não encontrado.");
+                if (reader.GetInt32(0) != 1) throw new InvalidOperationException("O caixa está fechado.");
+                expected = reader.GetDecimal(1);
             }
+
+            if (isExit && expected < amount)
+                throw new InvalidOperationException($"Movimento recusado: o caixa dispõe de {expected.ToString("N2", CultureInfo.InvariantCulture)} MT e a saída solicitada é de {amount.ToString("N2", CultureInfo.InvariantCulture)} MT.");
 
             await using var command = connection.CreateCommand();
             command.Transaction = transaction;
             command.CommandText = "INSERT INTO AyGestCashMovements (CashRegisterId,Type,Amount,PaymentMethod,Reference,Notes,OperatorId,CreatedAt) VALUES ($register,$type,$amount,$method,$reference,$notes,$operator,$created);";
-            Add(command, "$register", cashRegisterId); Add(command, "$type", type.Trim()); Add(command, "$amount", amount); Add(command, "$method", paymentMethod?.Trim() ?? "Dinheiro");
-            Add(command, "$reference", reference?.Trim() ?? string.Empty); Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$operator", operatorId); Add(command, "$created", DateTime.Now.ToString("O"));
+            Add(command, "$register", cashRegisterId); Add(command, "$type", normalizedType); Add(command, "$amount", amount); Add(command, "$method", paymentMethod?.Trim() ?? "Dinheiro"); Add(command, "$reference", reference?.Trim() ?? string.Empty); Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$operator", operatorId); Add(command, "$created", DateTime.Now.ToString("O"));
             await command.ExecuteNonQueryAsync(cancellationToken);
 
-            var sign = type.Equals("SAIDA", StringComparison.OrdinalIgnoreCase) || type.Equals("SANGRIA", StringComparison.OrdinalIgnoreCase) ? -1 : 1;
+            var sign = isExit ? -1 : 1;
             await using var update = connection.CreateCommand();
             update.Transaction = transaction;
-            update.CommandText = "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount + ($amount * $sign) WHERE Id=$id;";
-            Add(update, "$amount", amount); Add(update, "$sign", sign); Add(update, "$id", cashRegisterId);
-            await update.ExecuteNonQueryAsync(cancellationToken);
+            update.CommandText = isExit
+                ? "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount-$amount WHERE Id=$id AND Status=1 AND ExpectedAmount >= $amount;"
+                : "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount+$amount WHERE Id=$id AND Status=1;";
+            Add(update, "$amount", amount); Add(update, "$id", cashRegisterId);
+            var changed = await update.ExecuteNonQueryAsync(cancellationToken);
+            if (changed != 1) throw new InvalidOperationException("O caixa foi alterado por outra operação. O movimento não foi confirmado.");
             await transaction.CommitAsync(cancellationToken);
         }
 
         public async Task CloseCashAsync(int cashRegisterId, decimal countedAmount, string? notes = null, CancellationToken cancellationToken = default)
         {
+            if (countedAmount < 0) throw new ArgumentOutOfRangeException(nameof(countedAmount));
             await using var connection = await OpenAsync(cancellationToken);
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+            var expected = await GetExpectedAmountAsync(connection, transaction, cashRegisterId, cancellationToken);
             await using var command = connection.CreateCommand();
             command.Transaction = transaction;
-            command.CommandText = "UPDATE AyGestCashRegisters SET ClosedAt=$closed,CountedAmount=$counted,Difference=$difference,Status=0,Notes=CASE WHEN $notes='' THEN Notes ELSE $notes END WHERE Id=$id AND Status=1; SELECT changes();";
-            Add(command, "$closed", DateTime.Now.ToString("O")); Add(command, "$counted", countedAmount); Add(command, "$difference", countedAmount - await GetExpectedAmountAsync(connection, transaction, cashRegisterId, cancellationToken));
-            Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$id", cashRegisterId);
-            var changed = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
-            if (changed == 0) throw new InvalidOperationException("Caixa não encontrado ou já fechado.");
+            command.CommandText = "UPDATE AyGestCashRegisters SET ClosedAt=$closed,CountedAmount=$counted,Difference=$difference,Status=0,Notes=CASE WHEN $notes='' THEN Notes ELSE $notes END WHERE Id=$id AND Status=1;";
+            Add(command, "$closed", DateTime.Now.ToString("O")); Add(command, "$counted", countedAmount); Add(command, "$difference", countedAmount - expected); Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$id", cashRegisterId);
+            if (await command.ExecuteNonQueryAsync(cancellationToken) != 1) throw new InvalidOperationException("Caixa não encontrado ou já fechado.");
             await transaction.CommitAsync(cancellationToken);
         }
 
@@ -264,13 +255,11 @@ namespace AyGestRest.Services
             var backupDir = Path.Combine(Path.GetDirectoryName(_databasePath)!, "Backups");
             Directory.CreateDirectory(backupDir);
             var destination = Path.Combine(backupDir, $"AyGestRest_{DateTime.Now:yyyyMMdd_HHmmss_fff}.db");
-
             await using var source = new SqliteConnection($"Data Source={_databasePath};Mode=ReadWrite;Cache=Shared");
             await source.OpenAsync(cancellationToken);
             await using var target = new SqliteConnection($"Data Source={destination}");
             await target.OpenAsync(cancellationToken);
             source.BackupDatabase(target);
-
             await using var connection = await OpenAsync(cancellationToken);
             await using var command = connection.CreateCommand();
             command.CommandText = "INSERT INTO AyGestBackups (FilePath,FileSize,CreatedAt,Trigger,Success) VALUES ($path,$size,$created,$trigger,1);";
