@@ -68,9 +68,6 @@ namespace AyGestRest.Services
                         Quantity = item.Quantity,
                         BalanceAfter = product.Stock
                     });
-
-                    // O custo da última recepção passa a ser a referência de custo actual.
-                    product.CostPrice = item.UnitPrice;
                 }
 
                 purchase.Status = "Recebida";
