@@ -1,0 +1,43 @@
+name: AyGestRest Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish Windows x64
+        run: dotnet publish --configuration Release --runtime win-x64 --self-contained true --output publish --no-restore -p:PublishSingleFile=true -p:PublishReadyToRun=false
+
+      - name: Create ZIP
+        shell: powershell
+        run: Compress-Archive -Path publish\* -DestinationPath AyGestRest-win-x64.zip -Force
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: AyGestRest-Windows-x64
+          path: AyGestRest-win-x64.zip
+          if-no-files-found: error
