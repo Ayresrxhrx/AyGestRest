@@ -2,24 +2,25 @@ using AyGestRest.Data;
 using AyGestRest.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Data.Sqlite;
 using System.Globalization;
 
 namespace AyGestRest.Services
 {
     /// <summary>
     /// Finaliza uma venda como uma única operação transacional.
-    /// Pagamento, stock, caixa e auditoria são confirmados juntos.
+    /// Pagamento, stock, caixa, factura e auditoria são confirmados juntos.
     /// </summary>
     public sealed class SaleCompletionService
     {
         private readonly AyGestRestContext _db;
         private readonly InventoryTransactionService _inventory;
+        private readonly InvoiceTransactionService _invoice;
 
         public SaleCompletionService(AyGestRestContext db, InventoryTransactionService inventory)
         {
             _db = db;
             _inventory = inventory;
+            _invoice = new InvoiceTransactionService(db);
         }
 
         public async Task<SaleCompletionResult> CompleteAsync(
@@ -57,6 +58,11 @@ namespace AyGestRest.Services
             if (change > 0 && !payments.Any(p => IsCash(p.Method)))
                 throw new InvalidOperationException("O troco só pode ser calculado quando existe pagamento em dinheiro.");
 
+            // A estrutura de facturação é preparada antes da transação para que a criação
+            // das tabelas nunca faça parte do commit financeiro da venda.
+            var faturacaoSchema = new FaturacaoService(_db);
+            await faturacaoSchema.EnsureSchemaAsync(cancellationToken);
+
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
@@ -93,7 +99,11 @@ namespace AyGestRest.Services
 
                 await _db.SaveChangesAsync(cancellationToken);
 
-                // 3. Caixa é gravado na mesma transação SQLite/EF.
+                // 3. A factura é emitida ANTES do commit e usa a mesma transação.
+                // Se a factura falhar, pagamento, stock e caixa também sofrem rollback.
+                var invoice = await _invoice.EmitirNaTransacaoActualAsync(order, terminalId, cancellationToken);
+
+                // 4. Caixa é gravado na mesma transação SQLite/EF.
                 if (cashRegisterId.HasValue)
                 {
                     await AddCashMovementsInCurrentTransactionAsync(
@@ -105,14 +115,14 @@ namespace AyGestRest.Services
                         cancellationToken);
                 }
 
-                // 4. Auditoria fica dentro da mesma transação.
+                // 5. Auditoria fica dentro da mesma transação.
                 await AddAuditInCurrentTransactionAsync(
                     terminalId,
                     userId,
                     "SALE_COMPLETED",
                     "Order",
                     orderId.ToString(CultureInfo.InvariantCulture),
-                    $"Total={total:N2};Paid={requested:N2};Change={change:N2}",
+                    $"Total={total:N2};Paid={requested:N2};Change={change:N2};Invoice={invoice.Numero}",
                     cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
@@ -182,7 +192,8 @@ namespace AyGestRest.Services
             update.CommandText = "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount+$amount WHERE Id=$id AND Status=1;";
             Add(update, "$amount", amountApplied);
             Add(update, "$id", cashRegisterId);
-            await update.ExecuteNonQueryAsync(cancellationToken);
+            if (await update.ExecuteNonQueryAsync(cancellationToken) == 0)
+                throw new InvalidOperationException("O caixa deixou de estar aberto durante a finalização da venda.");
         }
 
         private async Task AddAuditInCurrentTransactionAsync(
