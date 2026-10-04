@@ -44,15 +44,10 @@ namespace AyGestRest.Views
 
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
 
-        private async void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             var term = SearchBox.Text.Trim();
-            foreach (var item in _items.ToList())
-            {
-                var visible = string.IsNullOrWhiteSpace(term) || item.Numero.Contains(term, StringComparison.OrdinalIgnoreCase) || item.ClienteNome.Contains(term, StringComparison.OrdinalIgnoreCase) || item.ClienteNuit.Contains(term, StringComparison.OrdinalIgnoreCase);
-                item.IsVisible = visible;
-            }
-            InvoicesGrid.ItemsSource = _items.Where(x => x.IsVisible).ToList();
+            InvoicesGrid.ItemsSource = _items.Where(x => string.IsNullOrWhiteSpace(term) || x.Numero.Contains(term, StringComparison.OrdinalIgnoreCase) || x.ClienteNome.Contains(term, StringComparison.OrdinalIgnoreCase) || x.ClienteNuit.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         private async void Void_Click(object sender, RoutedEventArgs e)
@@ -64,11 +59,13 @@ namespace AyGestRest.Views
                 return;
             }
 
-            var reason = Microsoft.VisualBasic.Interaction.InputBox("Indique o motivo da anulação:", "Anular factura", "Correcção de documento");
-            if (string.IsNullOrWhiteSpace(reason)) return;
+            var dialog = new TextInputDialog("Motivo da anulação", "");
+            dialog.Owner = this;
+            if (dialog.ShowDialog() != true) return;
+
             try
             {
-                await _faturacao.AnularFaturaAsync(selected.Id, reason);
+                await _faturacao.AnularFaturaAsync(selected.Id, dialog.Value);
                 await LoadAsync();
             }
             catch (Exception ex)
@@ -91,7 +88,6 @@ namespace AyGestRest.Views
             public decimal Total { get; set; }
             public FaturaEstado Estado { get; set; }
             public string TerminalId { get; set; } = string.Empty;
-            public bool IsVisible { get; set; } = true;
         }
     }
 }
