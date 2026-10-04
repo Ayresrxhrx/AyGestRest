@@ -38,7 +38,6 @@ namespace AyGestRest.Data
         public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
         public AyGestRestContext() { }
-
         public AyGestRestContext(DbContextOptions<AyGestRestContext> options) : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -72,41 +71,42 @@ namespace AyGestRest.Data
             modelBuilder.Entity<RestaurantConfig>(entity => entity.HasKey(e => e.Id));
             modelBuilder.Entity<ProductCategory>(entity => entity.HasKey(e => e.Id));
 
-            // Índices que suportam as operações centrais do POS sem alterar os dados existentes.
             modelBuilder.Entity<Product>(entity =>
             {
-                entity.HasIndex(e => e.CodigoBarras);
-                entity.HasIndex(e => e.CategoriaId);
+                entity.HasIndex(e => e.Barcode);
+                entity.HasIndex(e => e.CategoryId);
             });
 
             modelBuilder.Entity<Order>(entity =>
             {
-                entity.HasIndex(e => e.DataHora);
+                entity.HasIndex(e => e.Data);
+                entity.HasIndex(e => e.DataPedido);
                 entity.HasIndex(e => e.Status);
             });
 
             modelBuilder.Entity<Payment>(entity =>
             {
                 entity.HasIndex(e => e.OrderId);
-                entity.HasIndex(e => e.DataPagamento);
+                entity.HasIndex(e => e.PaymentDate);
+                entity.HasIndex(e => e.Data);
             });
 
             modelBuilder.Entity<InventoryMovement>(entity =>
             {
                 entity.HasIndex(e => e.ProductId);
-                entity.HasIndex(e => e.DataMovimento);
+                entity.HasIndex(e => e.CreatedAt);
             });
 
             modelBuilder.Entity<StockMovement>(entity =>
             {
                 entity.HasIndex(e => e.ProductId);
-                entity.HasIndex(e => e.DataMovimento);
+                entity.HasIndex(e => e.Date);
             });
 
             modelBuilder.Entity<PurchaseOrder>(entity =>
             {
                 entity.HasIndex(e => e.SupplierId);
-                entity.HasIndex(e => e.DataPedido);
+                entity.HasIndex(e => e.CreatedAt);
             });
         }
     }
