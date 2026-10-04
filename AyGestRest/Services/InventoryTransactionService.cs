@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AyGestRest.Services
 {
+    /// <summary>
+    /// Mantém o stock sincronizado com vendas e devoluções.
+    /// A operação é idempotente: a mesma venda não pode baixar o stock duas vezes.
+    /// </summary>
     public sealed class InventoryTransactionService
     {
         private readonly AyGestRestContext _db;
@@ -12,24 +16,28 @@ namespace AyGestRest.Services
 
         public async Task DeductForSaleAsync(int orderId, int? userId = null, CancellationToken cancellationToken = default)
         {
-            var order = await _db.Orders
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
+            if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
+                throw new InvalidOperationException($"O stock do pedido #{orderId} já foi processado.");
+
+            int responsibleUserId = userId ?? order.UserId;
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 foreach (var item in order.Items)
                 {
-                    var product = await _db.Products
-                        .Include(p => p.ProductIngredients)
-                        .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
+                    if (item.Quantity <= 0) continue;
 
-                    if (product == null || !product.Active)
-                        throw new InvalidOperationException($"O produto do item {item.Id} não está disponível.");
+                    var product = await _db.Products.Include(p => p.ProductIngredients).FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
+                        ?? throw new InvalidOperationException($"Produto do item {item.Id} não encontrado.");
+
+                    if (!product.Active)
+                        throw new InvalidOperationException($"O produto {product.Name} está inactivo.");
 
                     var quantity = Convert.ToDecimal(item.Quantity);
+
                     if (!product.IsComposite && product.TrackInventory)
                     {
                         if (product.Stock < quantity)
@@ -37,26 +45,14 @@ namespace AyGestRest.Services
 
                         var previous = product.Stock;
                         product.Stock -= quantity;
-                        _db.InventoryMovements.Add(new InventoryMovement
-                        {
-                            ProductId = product.Id,
-                            MovementType = "Saída",
-                            Quantity = (int)Math.Ceiling(quantity),
-                            PreviousStock = previous,
-                            NewStock = product.Stock,
-                            Reason = "Venda",
-                            Notes = $"Pedido #{order.Id}",
-                            UserId = userId ?? order.UserId,
-                            CreatedAt = DateTime.Now
-                        });
+                        AddInventoryMovement(product.Id, previous, product.Stock, item.Quantity, orderId, responsibleUserId, "Saída", "Venda");
+                        AddStockMovement(product.Id, (int)Math.Ceiling(quantity), product.Stock, "Saída");
                     }
 
                     if (product.IsComposite)
                     {
-                        var recipe = await _db.ProductIngredients
-                            .Include(pi => pi.Ingredient)
-                            .Where(pi => pi.ProductId == product.Id)
-                            .ToListAsync(cancellationToken);
+                        var recipe = await _db.ProductIngredients.Include(pi => pi.Ingredient).Where(pi => pi.ProductId == product.Id).ToListAsync(cancellationToken);
+                        if (recipe.Count == 0) throw new InvalidOperationException($"O produto composto {product.Name} não possui receita.");
 
                         foreach (var recipeItem in recipe)
                         {
@@ -88,14 +84,20 @@ namespace AyGestRest.Services
             var order = await _db.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 ?? throw new InvalidOperationException("Pedido não encontrado.");
 
+            if (!await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
+                throw new InvalidOperationException($"O stock do pedido #{orderId} não foi baixado e não pode ser restaurado.");
+
+            if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Devolução" && m.Notes == $"Pedido #{orderId}", cancellationToken))
+                throw new InvalidOperationException($"O stock do pedido #{orderId} já foi restaurado.");
+
+            int responsibleUserId = userId ?? order.UserId;
             await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 foreach (var item in order.Items)
                 {
-                    var product = await _db.Products
-                        .Include(p => p.ProductIngredients)
-                        .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
+                    if (item.Quantity <= 0) continue;
+                    var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
                     if (product == null) continue;
 
                     var quantity = Convert.ToDecimal(item.Quantity);
@@ -103,18 +105,8 @@ namespace AyGestRest.Services
                     {
                         var previous = product.Stock;
                         product.Stock += quantity;
-                        _db.InventoryMovements.Add(new InventoryMovement
-                        {
-                            ProductId = product.Id,
-                            MovementType = "Entrada",
-                            Quantity = (int)Math.Ceiling(quantity),
-                            PreviousStock = previous,
-                            NewStock = product.Stock,
-                            Reason = "Devolução",
-                            Notes = $"Pedido #{order.Id}",
-                            UserId = userId ?? order.UserId,
-                            CreatedAt = DateTime.Now
-                        });
+                        AddInventoryMovement(product.Id, previous, product.Stock, item.Quantity, orderId, responsibleUserId, "Entrada", "Devolução");
+                        AddStockMovement(product.Id, (int)Math.Ceiling(quantity), product.Stock, "Entrada");
                     }
 
                     if (product.IsComposite)
@@ -138,6 +130,34 @@ namespace AyGestRest.Services
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
+        }
+
+        private void AddInventoryMovement(int productId, decimal previous, decimal next, decimal quantity, int orderId, int userId, string type, string reason)
+        {
+            _db.InventoryMovements.Add(new InventoryMovement
+            {
+                ProductId = productId,
+                MovementType = type,
+                Quantity = (int)Math.Ceiling(Math.Abs(quantity)),
+                PreviousStock = previous,
+                NewStock = next,
+                Reason = reason,
+                Notes = $"Pedido #{orderId}",
+                UserId = userId,
+                CreatedAt = DateTime.Now
+            });
+        }
+
+        private void AddStockMovement(int productId, int quantity, decimal balanceAfter, string type)
+        {
+            _db.StockMovements.Add(new StockMovement
+            {
+                ProductId = productId,
+                Date = DateTime.Now,
+                Type = type,
+                Quantity = quantity,
+                BalanceAfter = balanceAfter
+            });
         }
     }
 }

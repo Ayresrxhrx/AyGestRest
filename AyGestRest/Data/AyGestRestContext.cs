@@ -1,6 +1,7 @@
 using AyGestRest.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System;
 using System.IO;
 
 namespace AyGestRest.Data
@@ -37,7 +38,6 @@ namespace AyGestRest.Data
         public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
         public AyGestRestContext() { }
-
         public AyGestRestContext(DbContextOptions<AyGestRestContext> options) : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -52,7 +52,7 @@ namespace AyGestRest.Data
             Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
 
             optionsBuilder
-                .UseSqlite($"Data Source={dbPath};Cache=Shared;Foreign Keys=True;Default Timeout=15")
+                .UseSqlite($"Data Source={dbPath};Cache=Shared;Foreign Keys=True;Default Timeout=30")
                 .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning));
         }
 
@@ -70,6 +70,44 @@ namespace AyGestRest.Data
 
             modelBuilder.Entity<RestaurantConfig>(entity => entity.HasKey(e => e.Id));
             modelBuilder.Entity<ProductCategory>(entity => entity.HasKey(e => e.Id));
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasIndex(e => e.Barcode);
+                entity.HasIndex(e => e.CategoryId);
+            });
+
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasIndex(e => e.Data);
+                entity.HasIndex(e => e.DataPedido);
+                entity.HasIndex(e => e.Status);
+            });
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.PaymentDate);
+                entity.HasIndex(e => e.Data);
+            });
+
+            modelBuilder.Entity<InventoryMovement>(entity =>
+            {
+                entity.HasIndex(e => e.ProductId);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            modelBuilder.Entity<StockMovement>(entity =>
+            {
+                entity.HasIndex(e => e.ProductId);
+                entity.HasIndex(e => e.Date);
+            });
+
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.HasIndex(e => e.SupplierId);
+                entity.HasIndex(e => e.CreatedAt);
+            });
         }
     }
 }
