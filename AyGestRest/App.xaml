@@ -8,6 +8,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/AyGestRest;component/Themes/AyGestPosTheme.xaml"/>
+                <ResourceDictionary Source="/AyGestRest;component/Themes/AyGestIOSTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

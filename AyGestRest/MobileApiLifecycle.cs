@@ -29,10 +29,17 @@ namespace AyGestRest
 
             try
             {
+                var config = AppConfig.Load();
+                if (config.Mode == AppMode.Client)
+                {
+                    Debug.WriteLine("[Mobile API] terminal cliente: servidor local não será iniciado.");
+                    return;
+                }
+
                 _tableSaleStateCoordinator ??= new TableSaleStateCoordinator();
-                _mobileApiServer = new EmbeddedApiServer("5050");
+                _mobileApiServer = new EmbeddedApiServer(config.ServerPort);
                 _mobileApiServer.Start();
-                Debug.WriteLine("[Mobile API] servidor iniciado após inicialização da aplicação.");
+                Debug.WriteLine($"[Mobile API] servidor iniciado na porta {config.ServerPort}.");
             }
             catch (Exception ex)
             {
