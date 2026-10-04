@@ -92,9 +92,9 @@ namespace AyGestRest.Services
                 "CASH" or "DINHEIRO" => PaymentType.Dinheiro,
                 "CARD" or "CARTÃO" or "CARTAO" => PaymentType.Cartao,
                 "MPESA" or "M-PESA" => PaymentType.MPesa,
-                "EMOLA" or "E-MOLA" => PaymentType.EMola,
-                "MKESH" => PaymentType.MKesh,
-                "QR" or "QR CODE" => PaymentType.QRCode,
+                "EMOLA" or "E-MOLA" => PaymentType.Emola,
+                "MKESH" => PaymentType.Outro,
+                "QR" or "QR CODE" => PaymentType.Outro,
                 _ => PaymentType.Outro
             };
         }
