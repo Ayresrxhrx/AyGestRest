@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -9,29 +9,31 @@ using System.Text;
 
 namespace AyGestRest.Data
 {
+    /// <summary>
+    /// Compatibilidade para instalações antigas do AyGest.
+    /// A criação/migração principal é feita pelo EF Core; este serviço apenas
+    /// reconcilia colunas e índices que possam existir em instalações antigas.
+    /// </summary>
     public static class DatabaseAutoSyncService
     {
         public static void EnsureDatabaseUpToDate(DbContext db)
         {
-            // Abrir conexão
-            if (db.Database.GetDbConnection().State != ConnectionState.Open)
-                db.Database.OpenConnection();
+            ConfigureSqlite(db);
 
-            db.Database.EnsureCreated(); // garante DB existe
+            // Nunca usar EnsureCreated numa BD que possui migrations.
+            // Migrate cria a estrutura oficial e preserva o histórico de migrations.
+            db.Database.Migrate();
 
             using var transaction = db.Database.BeginTransaction();
-
             try
             {
-                var model = db.Model;
-
-                foreach (var entity in model.GetEntityTypes())
+                foreach (var entity in db.Model.GetEntityTypes())
                 {
-                    string tableName = entity.GetTableName()?.Trim();
+                    string? tableName = entity.GetTableName()?.Trim();
                     if (string.IsNullOrWhiteSpace(tableName)) continue;
 
                     if (!TableExists(db, tableName))
-                        CreateTable(db, entity, tableName);
+                        continue;
 
                     SyncColumns(db, entity, tableName);
                     EnsureIndexes(db, entity, tableName);
@@ -51,47 +53,21 @@ namespace AyGestRest.Data
             }
         }
 
-        // ----------------------------
-        // TABELAS
-        // ----------------------------
-        private static void CreateTable(DbContext db, IEntityType entity, string tableName)
+        private static void ConfigureSqlite(DbContext db)
         {
-            var sql = new StringBuilder();
-            sql.Append($"CREATE TABLE [{tableName}] (");
+            if (db.Database.GetDbConnection().State != ConnectionState.Open)
+                db.Database.OpenConnection();
 
-            var props = entity.GetProperties()
-                .Where(p => !p.IsShadowProperty())
-                .OrderBy(p => p.IsPrimaryKey() ? 0 : 1)
-                .ToList();
+            using var command = db.Database.GetDbConnection().CreateCommand();
+            command.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=15000; PRAGMA synchronous=NORMAL;";
+            command.ExecuteNonQuery();
 
-            bool first = true;
-            foreach (var prop in props)
-            {
-                if (!first) sql.Append(", ");
-                first = false;
-
-                string colName = prop.GetColumnName();
-                string colType = MapToSqliteType(prop);
-
-                sql.Append($"[{colName}] {colType}");
-
-                if (prop.IsPrimaryKey())
-                {
-                    sql.Append(" PRIMARY KEY");
-                    if (colType == "INTEGER") sql.Append(" AUTOINCREMENT");
-                }
-
-                if (!prop.IsNullable && !prop.IsPrimaryKey())
-                    sql.Append(" NOT NULL DEFAULT " + GetSafeDefaultValue(prop));
-            }
-
-            sql.Append(");");
-            ExecuteNonQuery(db, sql.ToString());
+            // WAL deve ser configurado fora de uma transação.
+            using var walCommand = db.Database.GetDbConnection().CreateCommand();
+            walCommand.CommandText = "PRAGMA journal_mode=WAL;";
+            walCommand.ExecuteScalar();
         }
 
-        // ----------------------------
-        // COLUNAS
-        // ----------------------------
         private static void SyncColumns(DbContext db, IEntityType entity, string tableName)
         {
             var existingColumns = GetExistingColumns(db, tableName)
@@ -102,7 +78,6 @@ namespace AyGestRest.Data
             {
                 string colName = prop.GetColumnName();
                 string normalized = colName.Trim().ToLowerInvariant();
-
                 if (existingColumns.Contains(normalized)) continue;
 
                 string sql = $"ALTER TABLE [{tableName}] ADD COLUMN [{colName}] {MapToSqliteType(prop)}";
@@ -115,52 +90,38 @@ namespace AyGestRest.Data
             }
         }
 
-        // ----------------------------
-        // ÍNDICES
-        // ----------------------------
         private static void EnsureIndexes(DbContext db, IEntityType entity, string tableName)
         {
             var existingIndexes = GetExistingIndexes(db, tableName);
-
             foreach (var index in entity.GetIndexes())
             {
-                string indexName = index.GetDatabaseName();
+                string? indexName = index.GetDatabaseName();
                 if (string.IsNullOrEmpty(indexName) || existingIndexes.Contains(indexName)) continue;
 
                 string columns = string.Join(", ", index.Properties.Select(p => $"[{p.GetColumnName()}]"));
                 string unique = index.IsUnique ? "UNIQUE " : "";
-                string sql = $"CREATE {unique}INDEX [{indexName}] ON [{tableName}] ({columns});";
-
-                ExecuteNonQuery(db, sql);
+                ExecuteNonQuery(db, $"CREATE {unique}INDEX [{indexName}] ON [{tableName}] ({columns});");
             }
         }
 
-        // ----------------------------
-        // HELPERS
-        // ----------------------------
         private static bool TableExists(DbContext db, string tableName)
         {
             using var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@name COLLATE NOCASE";
-            var param = cmd.CreateParameter();
-            param.ParameterName = "@name";
-            param.Value = tableName;
-            cmd.Parameters.Add(param);
-
-            if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
-            int count = Convert.ToInt32(cmd.ExecuteScalar());
-            return count > 0;
+            var parameter = cmd.CreateParameter();
+            parameter.ParameterName = "@name";
+            parameter.Value = tableName;
+            cmd.Parameters.Add(parameter);
+            return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         }
 
         private static List<string> GetExistingColumns(DbContext db, string tableName)
         {
             using var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = $"PRAGMA table_info([{tableName}]);";
-
-            if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
             var list = new List<string>();
             using var reader = cmd.ExecuteReader();
-            while (reader.Read()) list.Add(reader.GetString(1)?.Trim());
+            while (reader.Read()) list.Add(reader.GetString(1).Trim());
             return list;
         }
 
@@ -168,12 +129,10 @@ namespace AyGestRest.Data
         {
             using var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name=@table COLLATE NOCASE";
-            var param = cmd.CreateParameter();
-            param.ParameterName = "@table";
-            param.Value = tableName;
-            cmd.Parameters.Add(param);
-
-            if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
+            var parameter = cmd.CreateParameter();
+            parameter.ParameterName = "@table";
+            parameter.Value = tableName;
+            cmd.Parameters.Add(parameter);
 
             var indexes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using var reader = cmd.ExecuteReader();
@@ -205,7 +164,6 @@ namespace AyGestRest.Data
             using var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = sql;
             cmd.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
-            if (cmd.Connection.State != ConnectionState.Open) cmd.Connection.Open();
             cmd.ExecuteNonQuery();
         }
     }
