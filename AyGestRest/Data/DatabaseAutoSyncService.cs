@@ -5,14 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 
 namespace AyGestRest.Data
 {
     /// <summary>
-    /// Compatibilidade para instalações antigas do AyGest.
-    /// A criação/migração principal é feita pelo EF Core; este serviço apenas
-    /// reconcilia colunas e índices que possam existir em instalações antigas.
+    /// Ponto único de preparação da BD do AyGest.
+    ///
+    /// Instalações que já têm migrations usam Migrate().
+    /// Instalações antigas deste projecto que ainda não têm migrations usam
+    /// EnsureCreated() apenas quando a BD ainda não existe. Depois disso,
+    /// a reconciliação de colunas/índices preserva os dados existentes.
     /// </summary>
     public static class DatabaseAutoSyncService
     {
@@ -20,9 +22,21 @@ namespace AyGestRest.Data
         {
             ConfigureSqlite(db);
 
-            // Nunca usar EnsureCreated numa BD que possui migrations.
-            // Migrate cria a estrutura oficial e preserva o histórico de migrations.
-            db.Database.Migrate();
+            var migrations = db.Database.GetMigrations().ToList();
+            bool databaseExists = db.Database.CanConnect();
+
+            if (migrations.Count > 0)
+            {
+                // Quando o assembly contém migrations oficiais, este é o único
+                // caminho responsável por evolução estrutural.
+                db.Database.Migrate();
+            }
+            else if (!databaseExists)
+            {
+                // Compatibilidade com a árvore actual do AyGest, que ainda não
+                // possui migrations EF Core no assembly.
+                db.Database.EnsureCreated();
+            }
 
             using var transaction = db.Database.BeginTransaction();
             try
@@ -32,8 +46,10 @@ namespace AyGestRest.Data
                     string? tableName = entity.GetTableName()?.Trim();
                     if (string.IsNullOrWhiteSpace(tableName)) continue;
 
-                    if (!TableExists(db, tableName))
-                        continue;
+                    // Em bases antigas, uma tabela pode ainda não existir.
+                    // Se não há migrations, EnsureCreated trata instalações novas;
+                    // não criamos tabelas individuais numa instalação com dados.
+                    if (!TableExists(db, tableName)) continue;
 
                     SyncColumns(db, entity, tableName);
                     EnsureIndexes(db, entity, tableName);
@@ -59,10 +75,9 @@ namespace AyGestRest.Data
                 db.Database.OpenConnection();
 
             using var command = db.Database.GetDbConnection().CreateCommand();
-            command.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=15000; PRAGMA synchronous=NORMAL;";
+            command.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=30000; PRAGMA synchronous=NORMAL;";
             command.ExecuteNonQuery();
 
-            // WAL deve ser configurado fora de uma transação.
             using var walCommand = db.Database.GetDbConnection().CreateCommand();
             walCommand.CommandText = "PRAGMA journal_mode=WAL;";
             walCommand.ExecuteScalar();
