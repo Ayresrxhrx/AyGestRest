@@ -1,0 +1,69 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="AyGestBackground" Color="#0B1016"/>
+    <SolidColorBrush x:Key="AyGestSurface" Color="#121923"/>
+    <SolidColorBrush x:Key="AyGestSurfaceElevated" Color="#182231"/>
+    <SolidColorBrush x:Key="AyGestBorder" Color="#263241"/>
+    <SolidColorBrush x:Key="AyGestPrimary" Color="#2EC946"/>
+    <SolidColorBrush x:Key="AyGestPrimaryHover" Color="#42DF5A"/>
+    <SolidColorBrush x:Key="AyGestText" Color="#F3F7F5"/>
+    <SolidColorBrush x:Key="AyGestMuted" Color="#9AA7B5"/>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Foreground" Value="{StaticResource AyGestText}"/>
+        <Setter Property="Background" Value="{StaticResource AyGestSurface}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AyGestBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,9"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,3"/>
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="Foreground" Value="{StaticResource AyGestText}"/>
+        <Setter Property="Background" Value="{StaticResource AyGestSurface}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AyGestBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,3"/>
+    </Style>
+
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="{StaticResource AyGestSurface}"/>
+        <Setter Property="Foreground" Value="{StaticResource AyGestText}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AyGestBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="RowBackground" Value="{StaticResource AyGestSurface}"/>
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource AyGestSurfaceElevated}"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource AyGestBorder}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="#1B2634"/>
+        <Setter Property="Foreground" Value="{StaticResource AyGestText}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="12,10"/>
+    </Style>
+
+    <Style x:Key="AyGestPrimaryButton" TargetType="Button">
+        <Setter Property="Foreground" Value="#07100A"/>
+        <Setter Property="Background" Value="{StaticResource AyGestPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="18,10"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <Style x:Key="AyGestSecondaryButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource AyGestText}"/>
+        <Setter Property="Background" Value="{StaticResource AyGestSurfaceElevated}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AyGestBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="18,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+</ResourceDictionary>
