@@ -158,11 +158,11 @@
                     <Border Grid.Row="0" Margin="0,0,0,24" Style="{StaticResource ModernCardStyle}" Padding="16">
                         <StackPanel Orientation="Horizontal">
                             <TextBox x:Name="TxtSearch" Width="300" Margin="0,0,16,0"
-                                     materialDesign:HintAssist.Hint="Buscar por nome ou código"
+                                     ToolTip="Buscar por nome ou código"
                                      Style="{StaticResource ValidatedTextBoxStyle}"
                                      TextChanged="TxtSearch_TextChanged"/>
                             <ComboBox x:Name="CmbFilterCategory" Width="200"
-                                      materialDesign:HintAssist.Hint="Filtrar por categoria"
+                                      ToolTip="Filtrar por categoria"
                                       DisplayMemberPath="Nome" SelectedValuePath="Id"
                                       SelectionChanged="CmbFilterCategory_SelectionChanged"/>
                         </StackPanel>
@@ -348,18 +348,18 @@
                                                             </Style>
                                                         </Border.Style>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <materialDesign:PackIcon Width="12" Height="12" Foreground="White" Margin="0,0,4,0">
-                                                                <materialDesign:PackIcon.Style>
-                                                                    <Style TargetType="materialDesign:PackIcon">
-                                                                        <Setter Property="Kind" Value="Cube"/>
+                                                            <TextBlock Foreground="White" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Text" Value="□"/>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding IsComposite}" Value="True">
-                                                                                <Setter Property="Kind" Value="ChefHat"/>
+                                                                                <Setter Property="Text" Value="♨"/>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
-                                                                </materialDesign:PackIcon.Style>
-                                                            </materialDesign:PackIcon>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
                                                             <TextBlock Foreground="White" FontWeight="Medium" FontSize="11">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
