@@ -1509,27 +1509,61 @@ namespace AyGestRest.Views
                 // não emite factura e não altera o estado da mesa para Livre.
                 using var transaction = _db.Database.BeginTransaction();
 
-                var itensAntigos = _db.OrderItems.Where(oi => oi.OrderId == _ordemAtual.Id).ToList();
-                _db.OrderItems.RemoveRange(itensAntigos);
+                var itensAntigos = _db.OrderItems
+                    .Where(oi => oi.OrderId == _ordemAtual.Id)
+                    .ToList();
+                var itensCarrinho = Carrinho.ToList();
+                var idsNoCarrinho = itensCarrinho.Select(i => i.ProductId).ToHashSet();
 
-                foreach (var item in Carrinho)
+                // Não apagar nem voltar para Pendente os itens que já foram enviados
+                // para a cozinha. Actualiza as linhas existentes e cria apenas itens novos.
+                foreach (var antigo in itensAntigos)
+                {
+                    if (!idsNoCarrinho.Contains(antigo.ProductId))
+                    {
+                        if (antigo.KitchenStatus != KitchenStatus.Pendente)
+                            throw new InvalidOperationException(
+                                $"O produto '{antigo.Name}' já foi enviado para a cozinha e não pode ser removido deste pedido guardado.");
+
+                        _db.OrderItems.Remove(antigo);
+                    }
+                }
+
+                foreach (var item in itensCarrinho)
                 {
                     if (item.ProductId <= 0 || item.Quantity <= 0)
                         throw new InvalidOperationException("O pedido contém um produto ou quantidade inválida.");
 
-                    _db.OrderItems.Add(new OrderItem
+                    var existente = itensAntigos.FirstOrDefault(oi => oi.ProductId == item.ProductId);
+                    if (existente != null)
                     {
-                        OrderId = _ordemAtual.Id,
-                        ProductId = item.ProductId,
-                        Name = item.ProductName,
-                        UnitPrice = item.UnitPrice,
-                        PriceAtMoment = item.UnitPrice,
-                        Quantity = item.Quantity,
-                        Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero),
-                        CreatedAt = DateTime.Now,
-                        Estado = "Pendente",
-                        KitchenStatus = KitchenStatus.Pendente
-                    });
+                        if (existente.KitchenStatus != KitchenStatus.Pendente &&
+                            item.Quantity < existente.Quantity)
+                            throw new InvalidOperationException(
+                                $"A quantidade de '{item.ProductName}' não pode ser reduzida abaixo da quantidade já enviada para a cozinha.");
+
+                        existente.Name = item.ProductName;
+                        existente.UnitPrice = item.UnitPrice;
+                        existente.PriceAtMoment = item.UnitPrice;
+                        existente.Quantity = item.Quantity;
+                        existente.Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero);
+                    }
+                    else
+                    {
+                        _db.OrderItems.Add(new OrderItem
+                        {
+                            OrderId = _ordemAtual.Id,
+                            ProductId = item.ProductId,
+                            Name = item.ProductName,
+                            UnitPrice = item.UnitPrice,
+                            PriceAtMoment = item.UnitPrice,
+                            Quantity = item.Quantity,
+                            Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero),
+                            CreatedAt = DateTime.Now,
+                            Estado = "Pendente",
+                            KitchenStatus = KitchenStatus.Pendente
+                        });
+                    }
                 }
 
                 var subtotal = decimal.Round(Carrinho.Sum(i => i.SubTotal), 2, MidpointRounding.AwayFromZero);
