@@ -1623,6 +1623,7 @@ namespace AyGestRest.Views
             {
                 var failedOrderId = _ordemAtual?.Id;
                 var failedTableId = _mesaAtual?.Id;
+                var failedTableSnapshot = _mesaAtual;
 
                 // A transacção pode ter sido revertida depois de o EF ter preparado
                 // alterações no ChangeTracker. Recarrega os registos persistidos,
@@ -1634,8 +1635,10 @@ namespace AyGestRest.Views
                         _ordemAtual = _db.Orders
                             .Include(o => o.Items)
                             .FirstOrDefault(o => o.Id == failedOrderId.Value);
-                    if (failedTableId.HasValue)
+                    if (failedTableId.HasValue && failedTableId.Value > 0)
                         _mesaAtual = _db.Tables.FirstOrDefault(t => t.Id == failedTableId.Value);
+                    else
+                        _mesaAtual = failedTableSnapshot;
 
                     if (failedOrderId.HasValue)
                     {
