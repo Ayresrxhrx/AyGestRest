@@ -205,7 +205,7 @@ namespace AyGestRest.Services
                     ? _db.Database.ExecuteSqlInterpolated($@"UPDATE Products SET Stock = Stock - {quantity}
                         WHERE Id = {id} AND TrackInventory = 1 AND Stock >= {quantity};")
                     : _db.Database.ExecuteSqlInterpolated($@"UPDATE Products SET Stock = Stock + {quantity}
-                        WHERE Id = {id} AND TrackInventory = 1;");
+                        WHERE Id = {id};");
 
                 if (affected != 1)
                 {
