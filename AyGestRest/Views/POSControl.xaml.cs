@@ -1595,6 +1595,13 @@ namespace AyGestRest.Views
                 _ordemAtual.Status = OrderStatus.Aberto;
 
                 _db.SaveChanges();
+
+                // Reserva imediatamente produtos simples e ingredientes das receitas.
+                // A reserva participa da mesma transação: se faltar stock, nada é guardado.
+                var reservationService = new OrderStockReservationService(_db);
+                reservationService.ReserveForOrderInCurrentTransaction(_ordemAtual.Id);
+                _db.SaveChanges();
+
                 transaction.Commit();
 
                 _comandasAbertas.RemoveAll(o => o.Id == _ordemAtual.Id);
@@ -2059,17 +2066,28 @@ namespace AyGestRest.Views
 
             try
             {
-                if (_ordemAtual != null && _db != null)
+                if (_db == null)
+                    throw new InvalidOperationException("A ligação à base de dados não está disponível.");
+
+                using (var transaction = await _db.Database.BeginTransactionAsync())
                 {
-                    _db.Orders.Remove(_ordemAtual);
+                    if (_ordemAtual != null)
+                    {
+                        // Devolve ao stock tudo o que estava reservado antes de eliminar o pedido.
+                        var reservationService = new OrderStockReservationService(_db);
+                        reservationService.ReleaseForOrderInCurrentTransaction(_ordemAtual.Id);
+                        _db.Orders.Remove(_ordemAtual);
+                    }
+
+                    if (_mesaAtual != null && _mesaAtual.Id > 0)
+                        _mesaAtual.Status = TableStatus.Livre;
+
+                    await _db.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
 
-                if (_mesaAtual != null && _mesaAtual.Id > 0 && _db != null)
-                {
-                    _mesaAtual.Status = TableStatus.Livre;
-                    await _db.SaveChangesAsync();
+                if (_mesaAtual != null && _mesaAtual.Id > 0)
                     AppEvents.RaiseSpecificTableStatusChanged(_mesaAtual.Id);
-                }
 
                 AppEvents.RaiseCartUpdated(new ObservableCollection<CartItem>());
                 AppEvents.RaiseOrderInfoUpdated("000000", "Nenhuma");
@@ -2087,10 +2105,6 @@ namespace AyGestRest.Views
 
                 AtualizarTelaCliente();
 
-                if (_db != null)
-                {
-                    await _db.SaveChangesAsync();
-                }
                 await CarregarMesasAsync();
                 await CarregarComandasAbertasAsync();
 
