@@ -204,6 +204,16 @@ namespace AyGestRest.Services
                 next = _db.Products.AsNoTracking().Where(p => p.Id == id).Select(p => p.Stock).First();
                 previous = reserve ? next + quantity : next - quantity;
 
+                // Sincroniza entidades já carregadas no contexto para que um SaveChanges
+                // posterior não volte a escrever o stock antigo sobre o valor reservado.
+                var trackedProduct = _db.ChangeTracker.Entries<Product>()
+                    .FirstOrDefault(e => e.Entity.Id == id);
+                if (trackedProduct != null)
+                {
+                    trackedProduct.Entity.Stock = next;
+                    trackedProduct.Property(p => p.Stock).IsModified = false;
+                }
+
                 _db.StockMovements.Add(new StockMovement
                 {
                     ProductId = id,
@@ -234,6 +244,16 @@ namespace AyGestRest.Services
 
                 next = _db.Ingredients.AsNoTracking().Where(i => i.Id == id).Select(i => i.Stock).First();
                 previous = reserve ? next + quantity : next - quantity;
+
+                var trackedIngredient = _db.ChangeTracker.Entries<Ingredient>()
+                    .FirstOrDefault(e => e.Entity.Id == id);
+                if (trackedIngredient != null)
+                {
+                    trackedIngredient.Entity.Stock = next;
+                    trackedIngredient.Property(i => i.Stock).IsModified = false;
+                    trackedIngredient.Entity.Quantity = (int)Math.Floor(next);
+                    trackedIngredient.Property(i => i.Quantity).IsModified = false;
+                }
             }
             else
             {
