@@ -125,7 +125,11 @@ namespace AyGestRest.Views
                 if (requested + 0.01m < total)
                     throw new InvalidOperationException($"Pagamento insuficiente. Faltam {(total - requested):N2} MT.");
 
-                await PersistirCarrinhoNoPedidoAsync(total);
+                // O fluxo de pagamento também passa pela gravação normal do POS:
+                // assim actualiza as linhas, preserva o estado da cozinha e reconcilia
+                // a reserva de stock antes de a venda ser finalizada noutro DbContext.
+                if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                    throw new InvalidOperationException("Não foi possível guardar o pedido e reservar o stock. O pagamento não foi iniciado.");
 
                 var terminalId = ResolveProductionTerminalId();
                 var userId = AppSession.CurrentUser?.Id;
