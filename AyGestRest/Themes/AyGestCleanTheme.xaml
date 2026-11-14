@@ -16,6 +16,9 @@
     <SolidColorBrush x:Key="AyGestBackground" Color="{StaticResource AyGestColorBackground}"/>
     <SolidColorBrush x:Key="AyGestSurface" Color="{StaticResource AyGestColorSurface}"/>
     <SolidColorBrush x:Key="AyGestSurfaceSoft" Color="{StaticResource AyGestColorSurfaceSoft}"/>
+    <!-- Chaves de compatibilidade para ecrãs que ainda usam os nomes dos temas anteriores. -->
+    <SolidColorBrush x:Key="AyGestSurfaceElevated" Color="#F8FAFD"/>
+    <SolidColorBrush x:Key="AyGestInfo" Color="#2878D0"/>
     <SolidColorBrush x:Key="AyGestBorder" Color="{StaticResource AyGestColorBorder}"/>
     <SolidColorBrush x:Key="AyGestPrimary" Color="{StaticResource AyGestColorPrimary}"/>
     <SolidColorBrush x:Key="AyGestPrimaryHover" Color="{StaticResource AyGestColorPrimaryHover}"/>
@@ -214,5 +217,11 @@
     <Style x:Key="AyGestDangerButton" TargetType="{x:Type Button}" BasedOn="{StaticResource AyGestPrimaryButton}">
         <Setter Property="Background" Value="{StaticResource AyGestDanger}"/>
         <Setter Property="BorderBrush" Value="{StaticResource AyGestDanger}"/>
+    </Style>
+    <Style x:Key="AyGestSidebarButton" TargetType="{x:Type Button}" BasedOn="{StaticResource AyGestSecondaryButton}">
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Padding" Value="12,10"/>
     </Style>
 </ResourceDictionary>
