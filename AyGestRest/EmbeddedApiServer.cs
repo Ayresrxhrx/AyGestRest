@@ -237,7 +237,7 @@ namespace AyGestRest
                 .Include(o => o.Table).Include(o => o.User);
         }
 
-        private static async Task CreateMobileOrder(HttpListenerRequest request, HttpListenerResponse response, AyGestRestContext db)
+        private async Task CreateMobileOrder(HttpListenerRequest request, HttpListenerResponse response, AyGestRestContext db)
         {
             var payload = await ReadJson<MobileOrderRequest>(request);
             if (payload == null || payload.Items == null || payload.Items.Count == 0)
