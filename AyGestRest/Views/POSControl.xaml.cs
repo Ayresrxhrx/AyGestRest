@@ -1508,6 +1508,9 @@ namespace AyGestRest.Views
 
             try
             {
+                if (!Carrinho.Any())
+                    throw new InvalidOperationException("Adicione pelo menos um produto antes de guardar o pedido.");
+
                 // Guardar mantém o pedido aberto e reserva imediatamente o stock.
                 // Não paga, não factura e não liberta a mesa.
                 using var transaction = _db.Database.BeginTransaction();
