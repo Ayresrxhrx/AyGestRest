@@ -1493,32 +1493,93 @@ namespace AyGestRest.Views
             }
         }
 
-        private void SalvarOrdemAtual()
+        private bool SalvarOrdemAtual(bool mostrarConfirmacao = false)
         {
-            if (_ordemAtual == null || _db == null) return;
+            if (_ordemAtual == null || _db == null)
+            {
+                if (mostrarConfirmacao)
+                    MessageBox.Show("Seleccione ou abra um pedido antes de guardar.", "Pedido não seleccionado",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
 
             try
             {
-                var itensAntigos = _db.OrderItems.Where(oi => oi.OrderId == _ordemAtual.Id);
+                // Guardar é uma operação de rascunho: não paga, não baixa stock,
+                // não emite factura e não altera o estado da mesa para Livre.
+                using var transaction = _db.Database.BeginTransaction();
+
+                var itensAntigos = _db.OrderItems.Where(oi => oi.OrderId == _ordemAtual.Id).ToList();
                 _db.OrderItems.RemoveRange(itensAntigos);
 
                 foreach (var item in Carrinho)
                 {
+                    if (item.ProductId <= 0 || item.Quantity <= 0)
+                        throw new InvalidOperationException("O pedido contém um produto ou quantidade inválida.");
+
                     _db.OrderItems.Add(new OrderItem
                     {
                         OrderId = _ordemAtual.Id,
                         ProductId = item.ProductId,
                         Name = item.ProductName,
                         UnitPrice = item.UnitPrice,
-                        Quantity = item.Quantity
+                        PriceAtMoment = item.UnitPrice,
+                        Quantity = item.Quantity,
+                        Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero),
+                        CreatedAt = DateTime.Now,
+                        Estado = "Pendente",
+                        KitchenStatus = KitchenStatus.Pendente
                     });
                 }
 
+                var subtotal = decimal.Round(Carrinho.Sum(i => i.SubTotal), 2, MidpointRounding.AwayFromZero);
+                _ordemAtual.Total = subtotal;
+                _ordemAtual.TotalAmount = subtotal;
+                _ordemAtual.IsPaid = false;
+                _ordemAtual.IsClosed = false;
+                _ordemAtual.Fecha = false;
+                _ordemAtual.CloseDate = null;
+                _ordemAtual.Status = OrderStatus.Aberto;
+
                 _db.SaveChanges();
+                transaction.Commit();
+
+                _comandasAbertas.RemoveAll(o => o.Id == _ordemAtual.Id);
+                _comandasAbertas.Add(_ordemAtual);
+                AtualizarTotal();
+                AtualizarContadorComandas();
+
+                if (mostrarConfirmacao)
+                    MostrarMensagemStatus($"Pedido #{_ordemAtual.Id:D6} guardado. Continua aberto para adicionar mais produtos.",
+                        Brushes.ForestGreen, 5);
+
+                return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Erro ao salvar ordem: {ex.Message}");
+                Debug.WriteLine($"Erro ao guardar pedido #{_ordemAtual.Id}: {ex}");
+                if (mostrarConfirmacao)
+                    MessageBox.Show($"Não foi possível guardar o pedido. Nenhuma alteração foi confirmada.\n\n{ex.Message}",
+                        "Erro ao guardar pedido", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+        private void BtnGuardarPedido_Click(object sender, RoutedEventArgs e)
+        {
+            if (_ordemAtual == null)
+            {
+                MessageBox.Show("Abra uma mesa ou pedido antes de guardar.", "Pedido não seleccionado",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (SalvarOrdemAtual(mostrarConfirmacao: true))
+            {
+                // Mantém o pedido, a mesa e o carrinho activos. O operador pode
+                // continuar a adicionar produtos ou voltar ao pedido mais tarde.
+                _modoSelecaoMesa = false;
+                AtualizarTelaCliente();
             }
         }
 
