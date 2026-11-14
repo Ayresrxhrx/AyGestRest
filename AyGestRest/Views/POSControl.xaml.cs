@@ -1648,45 +1648,82 @@ namespace AyGestRest.Views
                 return;
             }
 
-            var itensCozinha = new List<CartItem>();
+            // Guarda primeiro sem fechar a venda. Assim, a cozinha recebe exactamente
+            // os itens persistidos e o pedido continua aberto para receber mais produtos.
+            if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                return;
+
+            List<OrderItem> linhasPendentes;
             using (var db = new AyGestRestContext())
             {
-                foreach (var item in Carrinho)
-                {
-                    var prod = await db.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == item.ProductId);
-                    if (prod?.PrintToKitchen == true)
-                        itensCozinha.Add(item);
-                }
+                linhasPendentes = await db.OrderItems
+                    .Include(i => i.Product)
+                    .Where(i => i.OrderId == _ordemAtual.Id &&
+                                i.KitchenStatus == KitchenStatus.Pendente &&
+                                i.Product != null && i.Product.PrintToKitchen)
+                    .OrderBy(i => i.CreatedAt)
+                    .ToListAsync();
             }
 
-            if (!itensCozinha.Any())
+            if (linhasPendentes.Count == 0)
             {
-                MessageBox.Show("Nenhum item marcado para cozinha.", "Informação", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Não existem novos itens pendentes para enviar à cozinha.",
+                    "Cozinha actualizada", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            string textoCozinha = GerarTextoReciboCozinhaCompleto(itensCozinha);
+            var itensCozinha = linhasPendentes.Select(i => new CartItem
+            {
+                ProductId = i.ProductId,
+                ProductName = i.Name,
+                UnitPrice = i.UnitPrice,
+                Quantity = i.Quantity
+            }).ToList();
 
+            string textoCozinha = GerarTextoReciboCozinhaCompleto(itensCozinha);
             string impressora = _config?.KitchenPrinterName;
             if (string.IsNullOrWhiteSpace(impressora) || impressora == "(Nenhuma)")
                 impressora = _config?.PrinterName;
 
             if (string.IsNullOrWhiteSpace(impressora))
             {
-                MessageBox.Show("Nenhuma impressora configurada para cozinha.", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Nenhuma impressora configurada para cozinha.", "Erro",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             bool sucesso = await ImprimirCozinhaAsync(textoCozinha, impressora);
-
-            if (sucesso)
+            if (!sucesso)
             {
-                MostrarMensagemStatus("Pedido enviado para cozinha!", Brushes.Green, 4);
-            }
-            else
-            {
-                MessageBox.Show($"Falha ao enviar para cozinha.\n\nVerifique:\n• Impressora ligada?\n• Papel colocado?\n• Nome correto: {impressora}",
+                MessageBox.Show($"Falha ao enviar para cozinha.\n\nVerifique:\n• Impressora ligada?\n• Papel colocado?\n• Nome correcto: {impressora}",
                     "Erro de Impressão", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Só marca como enviado depois de a impressora confirmar a operação.
+            try
+            {
+                var ids = linhasPendentes.Select(i => i.Id).ToList();
+                using var db = new AyGestRestContext();
+                var enviados = await db.OrderItems
+                    .Where(i => ids.Contains(i.Id) && i.KitchenStatus == KitchenStatus.Pendente)
+                    .ToListAsync();
+
+                foreach (var item in enviados)
+                {
+                    item.KitchenStatus = KitchenStatus.EmPreparacao;
+                    item.Estado = "Em preparação";
+                }
+
+                await db.SaveChangesAsync();
+                MostrarMensagemStatus($"{enviados.Sum(i => i.Quantity)} unidade(s) nova(s) enviada(s) para a cozinha.",
+                    Brushes.ForestGreen, 5);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"A impressão foi concluída, mas não foi possível actualizar o estado da cozinha: {ex}");
+                MessageBox.Show("O pedido foi impresso, mas o estado dos itens não foi actualizado na base de dados. Verifique a cozinha antes de voltar a imprimir para evitar duplicações.",
+                    "Atenção: estado não actualizado", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
