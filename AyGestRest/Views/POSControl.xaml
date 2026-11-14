@@ -1524,7 +1524,7 @@
                             </Border>
 
                             <!-- Total Final -->
-                            <Border Grid.Row="3" Background="#FFFFFF" CornerRadius="6" Padding="8" Margin="0,0,0,4">
+                            <Border Grid.Row="3" Background="#172033" CornerRadius="6" Padding="8" Margin="0,0,0,4">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
