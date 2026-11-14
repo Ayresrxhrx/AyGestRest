@@ -2073,6 +2073,12 @@ namespace AyGestRest.Views
                 {
                     if (_ordemAtual != null)
                     {
+                        bool enviadoParaCozinha = await _db.OrderItems.AnyAsync(i =>
+                            i.OrderId == _ordemAtual.Id && i.KitchenStatus != KitchenStatus.Pendente);
+                        if (enviadoParaCozinha)
+                            throw new InvalidOperationException(
+                                "Este pedido já foi enviado para a cozinha. Não pode ser eliminado pelo POS, para evitar devolver ao stock produtos que já entraram em preparação. Solicite a intervenção de um responsável.");
+
                         // Devolve ao stock tudo o que estava reservado antes de eliminar o pedido.
                         var reservationService = new OrderStockReservationService(_db);
                         reservationService.ReleaseForOrderInCurrentTransaction(_ordemAtual.Id);
