@@ -217,6 +217,27 @@ namespace AyGestRest.Services
                 }
             }
 
+            // Garante uma marca de devolução ao nível do pedido. Produtos compostos
+            // geram movimentos por ingrediente, pelo que sem esta marca uma segunda
+            // chamada poderia devolver os mesmos ingredientes novamente.
+            if (order.Items.Count > 0 &&
+                !_db.InventoryMovements.Local.Any(m =>
+                    m.Reason == "Devolução" && m.Notes == $"Pedido #{orderId}"))
+            {
+                _db.InventoryMovements.Add(new InventoryMovement
+                {
+                    ProductId = order.Items[0].ProductId,
+                    MovementType = "Entrada",
+                    Quantity = 0,
+                    PreviousStock = 0m,
+                    NewStock = 0m,
+                    Reason = "Devolução",
+                    Notes = $"Pedido #{orderId}",
+                    UserId = responsibleUserId,
+                    CreatedAt = DateTime.Now
+                });
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
         }
 
