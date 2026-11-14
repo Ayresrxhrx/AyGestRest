@@ -1594,10 +1594,8 @@ namespace AyGestRest.Views
                 _ordemAtual.CloseDate = null;
                 _ordemAtual.Status = OrderStatus.Aberto;
 
-                _db.SaveChanges();
-
-                // Reserva imediatamente produtos simples e ingredientes das receitas.
-                // A reserva participa da mesma transação: se faltar stock, nada é guardado.
+                // Reserva stock e persiste o pedido numa única transacção.
+                // Se a reserva falhar, o pedido e os movimentos são revertidos em conjunto.
                 var reservationService = new OrderStockReservationService(_db);
                 reservationService.ReserveForOrderInCurrentTransaction(_ordemAtual.Id);
                 _db.SaveChanges();
@@ -1617,7 +1615,35 @@ namespace AyGestRest.Views
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Erro ao guardar pedido #{_ordemAtual.Id}: {ex}");
+                var failedOrderId = _ordemAtual?.Id;
+                var failedTableId = _mesaAtual?.Id;
+
+                // A transacção pode ter sido revertida depois de o EF ter preparado
+                // alterações no ChangeTracker. Recarrega os registos persistidos,
+                // mantendo o carrinho visível para o operador corrigir as quantidades.
+                try
+                {
+                    _db.ChangeTracker.Clear();
+                    if (failedOrderId.HasValue)
+                        _ordemAtual = _db.Orders
+                            .Include(o => o.Items)
+                            .FirstOrDefault(o => o.Id == failedOrderId.Value);
+                    if (failedTableId.HasValue)
+                        _mesaAtual = _db.Tables.FirstOrDefault(t => t.Id == failedTableId.Value);
+
+                    if (failedOrderId.HasValue)
+                    {
+                        _comandasAbertas.RemoveAll(o => o.Id == failedOrderId.Value);
+                        if (_ordemAtual != null)
+                            _comandasAbertas.Add(_ordemAtual);
+                    }
+                }
+                catch (Exception reloadError)
+                {
+                    Debug.WriteLine($"Falha ao recarregar pedido após rollback: {reloadError}");
+                }
+
+                Debug.WriteLine($"Erro ao guardar pedido #{failedOrderId}: {ex}");
                 if (mostrarConfirmacao)
                     MessageBox.Show($"Não foi possível guardar o pedido. Nenhuma alteração foi confirmada.\n\n{ex.Message}",
                         "Erro ao guardar pedido", MessageBoxButton.OK, MessageBoxImage.Error);
