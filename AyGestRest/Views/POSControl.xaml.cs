@@ -1461,14 +1461,15 @@ namespace AyGestRest.Views
                 _horaAberturaMesa = ordemExistente.OpenDate;
 
                 Carrinho.Clear();
-                foreach (var item in ordemExistente.Items)
+                foreach (var grupo in ordemExistente.Items.GroupBy(i => i.ProductId))
                 {
+                    var item = grupo.OrderByDescending(i => i.CreatedAt).First();
                     Carrinho.Add(new CartItem
                     {
                         ProductId = item.ProductId,
                         ProductName = item.Name,
                         UnitPrice = item.UnitPrice,
-                        Quantity = item.Quantity
+                        Quantity = grupo.Sum(i => i.Quantity)
                     });
                 }
 
@@ -1515,19 +1516,21 @@ namespace AyGestRest.Views
                     .Where(oi => oi.OrderId == _ordemAtual.Id)
                     .ToList();
                 var itensCarrinho = Carrinho.ToList();
-                var idsNoCarrinho = itensCarrinho.Select(i => i.ProductId).ToHashSet();
+                var produtosNoCarrinho = itensCarrinho.Select(i => i.ProductId).ToHashSet();
 
-                // Não apagar nem voltar para Pendente os itens que já foram enviados
-                // para a cozinha. Actualiza as linhas existentes e cria apenas itens novos.
-                foreach (var antigo in itensAntigos)
+                // Mantém intactas as quantidades já enviadas para a cozinha.
+                // Se o cliente pedir mais unidades do mesmo produto, cria uma nova
+                // linha Pendente apenas para a quantidade adicional.
+                foreach (var grupoAntigo in itensAntigos.GroupBy(i => i.ProductId))
                 {
-                    if (!idsNoCarrinho.Contains(antigo.ProductId))
+                    var linhas = grupoAntigo.ToList();
+                    if (!produtosNoCarrinho.Contains(grupoAntigo.Key))
                     {
-                        if (antigo.KitchenStatus != KitchenStatus.Pendente)
+                        if (linhas.Any(i => i.KitchenStatus != KitchenStatus.Pendente))
                             throw new InvalidOperationException(
-                                $"O produto '{antigo.Name}' já foi enviado para a cozinha e não pode ser removido deste pedido guardado.");
+                                $"O produto '{linhas[0].Name}' já foi enviado para a cozinha e não pode ser removido do pedido.");
 
-                        _db.OrderItems.Remove(antigo);
+                        _db.OrderItems.RemoveRange(linhas);
                     }
                 }
 
@@ -1536,21 +1539,35 @@ namespace AyGestRest.Views
                     if (item.ProductId <= 0 || item.Quantity <= 0)
                         throw new InvalidOperationException("O pedido contém um produto ou quantidade inválida.");
 
-                    var existente = itensAntigos.FirstOrDefault(oi => oi.ProductId == item.ProductId);
-                    if (existente != null)
-                    {
-                        if (existente.KitchenStatus != KitchenStatus.Pendente &&
-                            item.Quantity < existente.Quantity)
-                            throw new InvalidOperationException(
-                                $"A quantidade de '{item.ProductName}' não pode ser reduzida abaixo da quantidade já enviada para a cozinha.");
+                    var linhasAntigas = itensAntigos.Where(i => i.ProductId == item.ProductId).ToList();
+                    var linhasEnviadas = linhasAntigas.Where(i => i.KitchenStatus != KitchenStatus.Pendente).ToList();
+                    var linhasPendentes = linhasAntigas.Where(i => i.KitchenStatus == KitchenStatus.Pendente).ToList();
+                    var quantidadeEnviada = linhasEnviadas.Sum(i => i.Quantity);
 
-                        existente.Name = item.ProductName;
-                        existente.UnitPrice = item.UnitPrice;
-                        existente.PriceAtMoment = item.UnitPrice;
-                        existente.Quantity = item.Quantity;
-                        existente.Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero);
+                    if (item.Quantity < quantidadeEnviada)
+                        throw new InvalidOperationException(
+                            $"A quantidade de '{item.ProductName}' não pode ficar abaixo das {quantidadeEnviada} unidades já enviadas para a cozinha.");
+
+                    var quantidadePendente = item.Quantity - quantidadeEnviada;
+                    if (linhasPendentes.Count > 0)
+                    {
+                        var linhaPendente = linhasPendentes[0];
+                        if (quantidadePendente <= 0)
+                        {
+                            _db.OrderItems.RemoveRange(linhasPendentes);
+                        }
+                        else
+                        {
+                            linhaPendente.Name = item.ProductName;
+                            linhaPendente.UnitPrice = item.UnitPrice;
+                            linhaPendente.PriceAtMoment = item.UnitPrice;
+                            linhaPendente.Quantity = quantidadePendente;
+                            linhaPendente.Total = decimal.Round(item.UnitPrice * quantidadePendente, 2, MidpointRounding.AwayFromZero);
+                            if (linhasPendentes.Count > 1)
+                                _db.OrderItems.RemoveRange(linhasPendentes.Skip(1));
+                        }
                     }
-                    else
+                    else if (quantidadePendente > 0)
                     {
                         _db.OrderItems.Add(new OrderItem
                         {
@@ -1559,8 +1576,8 @@ namespace AyGestRest.Views
                             Name = item.ProductName,
                             UnitPrice = item.UnitPrice,
                             PriceAtMoment = item.UnitPrice,
-                            Quantity = item.Quantity,
-                            Total = decimal.Round(item.SubTotal, 2, MidpointRounding.AwayFromZero),
+                            Quantity = quantidadePendente,
+                            Total = decimal.Round(item.UnitPrice * quantidadePendente, 2, MidpointRounding.AwayFromZero),
                             CreatedAt = DateTime.Now,
                             Estado = "Pendente",
                             KitchenStatus = KitchenStatus.Pendente
