@@ -21,9 +21,6 @@ namespace AyGestRest
 
             _context = new AyGestRestContext();
 
-            // 🔹 Cria Admin antes de qualquer login
-            using var db = new AyGestRestContext();
-            db.EnsureAdminUser();
         }
 
         // Construtor para modo cliente (com API)
