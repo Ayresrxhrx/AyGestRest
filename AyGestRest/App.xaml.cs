@@ -114,9 +114,6 @@ namespace AyGestRest
                     // 🆕 VERIFICAÇÃO ESPECÍFICA PARA ASSOCIAÇÃO INGREDIENTE-PRODUTO
                     CheckAndFixProductIngredientAssociations(db);
 
-                    // Garantir que o admin existe
-                    db.EnsureAdminUser();
-
                     // ⚡ Checar setup inicial APÓS DB estar pronto
                     // 🆕 CORREÇÃO: Só mostrar wizard se não existir flag de configuração concluída
                     if (!IsInitialSetupCompleted())
