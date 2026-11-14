@@ -1704,8 +1704,7 @@ namespace AyGestRest.Views
             try
             {
                 var ids = linhasPendentes.Select(i => i.Id).ToList();
-                using var db = new AyGestRestContext();
-                var enviados = await db.OrderItems
+                var enviados = await _db!.OrderItems
                     .Where(i => ids.Contains(i.Id) && i.KitchenStatus == KitchenStatus.Pendente)
                     .ToListAsync();
 
@@ -1715,7 +1714,7 @@ namespace AyGestRest.Views
                     item.Estado = "Em preparação";
                 }
 
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 MostrarMensagemStatus($"{enviados.Sum(i => i.Quantity)} unidade(s) nova(s) enviada(s) para a cozinha.",
                     Brushes.ForestGreen, 5);
             }
