@@ -1588,7 +1588,9 @@ namespace AyGestRest.Views
                     }
                 }
 
-                var subtotal = decimal.Round(Carrinho.Sum(i => i.SubTotal), 2, MidpointRounding.AwayFromZero);
+                // Usa o total efectivo do POS, incluindo o desconto configurado,
+                // para que o valor guardado corresponda ao valor apresentado no pagamento.
+                var subtotal = CalcularTotalAtualDaVenda();
                 _ordemAtual.Total = subtotal;
                 _ordemAtual.TotalAmount = subtotal;
                 _ordemAtual.IsPaid = false;
