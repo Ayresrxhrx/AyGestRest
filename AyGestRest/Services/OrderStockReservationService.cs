@@ -31,6 +31,7 @@ namespace AyGestRest.Services
 
             var targets = BuildTargets(order);
             var current = ReadCurrentReservations(orderId);
+            var changes = new List<(string Key, int ProductId, decimal Delta)>();
 
             foreach (var key in current.Keys.Union(targets.Keys).ToList())
             {
@@ -38,12 +39,25 @@ namespace AyGestRest.Services
                 var desired = targets.TryGetValue(key, out var target) ? target.Quantity : 0m;
                 var delta = decimal.Round(desired - reserved, 4, MidpointRounding.AwayFromZero);
                 if (delta > 0m)
-                    ApplyStockChange(order, key, target.ProductId, delta, reserve: true);
+                {
+                    // Valida todas as necessidades antes de alterar qualquer saldo.
+                    var available = ReadStock(key);
+                    if (available < delta)
+                        throw new InvalidOperationException(
+                            $"Stock insuficiente para reservar {DescribeResource(key)}. Necessário: {delta:N2}; disponível: {available:N2}.");
+                    changes.Add((key, target.ProductId, delta));
+                }
                 else if (delta < 0m)
-                    ApplyStockChange(order, key,
-                        targets.TryGetValue(key, out var targetForRelease) ? targetForRelease.ProductId : current[key].ProductId,
-                        Math.Abs(delta), reserve: false);
+                {
+                    var productId = targets.TryGetValue(key, out var targetForRelease)
+                        ? targetForRelease.ProductId
+                        : current[key].ProductId;
+                    changes.Add((key, productId, delta));
+                }
             }
+
+            foreach (var change in changes)
+                ApplyStockChange(order, change.Key, change.ProductId, Math.Abs(change.Delta), reserve: change.Delta > 0m);
         }
 
         public void ReleaseForOrderInCurrentTransaction(int orderId)
@@ -92,11 +106,11 @@ namespace AyGestRest.Services
         {
             var targets = new Dictionary<string, ReservationTarget>();
 
-            // Consultar as linhas persistidas evita usar uma navegação Items antiga
-            // quando o pedido já estava carregado antes de o carrinho ser actualizado.
-            var orderItems = _db.OrderItems
-                .AsNoTracking()
-                .Where(i => i.OrderId == order.Id && i.Quantity > 0)
+            // SalvarOrdemAtual já carregou todas as linhas e actualizou o ChangeTracker.
+            // Usar Local inclui linhas novas/alteradas e exclui as que serão removidas.
+            var orderItems = _db.OrderItems.Local
+                .Where(i => i.OrderId == order.Id && i.Quantity > 0 &&
+                            _db.Entry(i).State != EntityState.Deleted)
                 .ToList();
 
             foreach (var item in orderItems)
@@ -272,6 +286,18 @@ namespace AyGestRest.Services
                 UserId = order.UserId,
                 CreatedAt = now
             });
+        }
+
+        private string DescribeResource(string key)
+        {
+            if (key.StartsWith("P:", StringComparison.Ordinal))
+                return _db.Products.AsNoTracking()
+                    .Where(p => p.Id == int.Parse(key.Substring(2), System.Globalization.CultureInfo.InvariantCulture))
+                    .Select(p => p.Name).FirstOrDefault() ?? key;
+
+            return _db.Ingredients.AsNoTracking()
+                .Where(i => i.Id == int.Parse(key.Substring(2), System.Globalization.CultureInfo.InvariantCulture))
+                .Select(i => i.Name).FirstOrDefault() ?? key;
         }
 
         private decimal ReadStock(string key)
