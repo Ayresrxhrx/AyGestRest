@@ -1293,7 +1293,8 @@ namespace AyGestRest.Views
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        SalvarOrdemAtual();
+                        if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                            return;
                     }
                     else
                     {
@@ -1451,7 +1452,8 @@ namespace AyGestRest.Views
 
                 if (_ordemAtual != null && Carrinho.Any())
                 {
-                    SalvarOrdemAtual();
+                    if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                        return;
                 }
 
                 _ordemAtual = ordemExistente;
