@@ -92,7 +92,14 @@ namespace AyGestRest.Services
         {
             var targets = new Dictionary<string, ReservationTarget>();
 
-            foreach (var item in order.Items.Where(i => i.Quantity > 0))
+            // Consultar as linhas persistidas evita usar uma navegação Items antiga
+            // quando o pedido já estava carregado antes de o carrinho ser actualizado.
+            var orderItems = _db.OrderItems
+                .AsNoTracking()
+                .Where(i => i.OrderId == order.Id && i.Quantity > 0)
+                .ToList();
+
+            foreach (var item in orderItems)
             {
                 var product = _db.Products
                     .Include(p => p.ProductIngredients)
