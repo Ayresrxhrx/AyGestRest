@@ -42,6 +42,16 @@ namespace AyGestRest.Services
             if (await _db.InventoryMovements.AnyAsync(m => m.Reason == "Venda" && m.Notes == $"Pedido #{orderId}", cancellationToken))
                 throw new InvalidOperationException($"O stock do pedido #{orderId} já foi processado.");
 
+            // Se o pedido já reservou stock ao ser guardado, a venda apenas consome
+            // contabilisticamente essa reserva. Não volta a descontar produtos/ingredientes.
+            var reservationService = new OrderStockReservationService(_db);
+            if (reservationService.HasActiveReservation(orderId))
+            {
+                reservationService.MarkReservationConsumedForSaleInCurrentTransaction(orderId);
+                await _db.SaveChangesAsync(cancellationToken);
+                return;
+            }
+
             int responsibleUserId = userId ?? order.UserId;
 
             foreach (var item in order.Items)
