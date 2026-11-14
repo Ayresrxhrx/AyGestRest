@@ -238,7 +238,7 @@ namespace AyGestRest.Services
                 {
                     var ingredient = _db.Ingredients.AsNoTracking().FirstOrDefault(i => i.Id == id);
                     throw new InvalidOperationException(reserve
-                        ? $"Stock insuficiente do ingrediente {ingredient?.Name ?? $"#{id}"}. Necessário: {quantity:N2}."
+                        ? $"Stock insuficiente do ingrediente {ingredient?.Name ?? ("#" + id)}. Necessário: {quantity:N2}."
                         : $"Não foi possível libertar o ingrediente #{id}.");
                 }
 
