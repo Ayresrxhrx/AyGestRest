@@ -1,4 +1,5 @@
 using AyGestRest.Models;
+using AyGestRest.Data;
 using AyGestRest.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -162,7 +163,7 @@ namespace AyGestRest.Views
                     result.OrderId,
                     _clienteAtual?.Id,
                     _clienteAtual?.Nome,
-                    _clienteAtual?.Nuit);
+                    null);
 
                 await Dispatcher.InvokeAsync(() =>
                 {
