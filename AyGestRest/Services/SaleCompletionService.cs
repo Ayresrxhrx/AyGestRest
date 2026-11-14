@@ -296,9 +296,8 @@ namespace AyGestRest.Services
             p.Value = value ?? DBNull.Value;
             command.Parameters.Add(p);
         }
+        private sealed record NormalizedPayment(PaymentPart Source, decimal AppliedAmount);
     }
-
-    private sealed record NormalizedPayment(PaymentPart Source, decimal AppliedAmount);
 
     public sealed record SaleCompletionResult(
         int OrderId,
