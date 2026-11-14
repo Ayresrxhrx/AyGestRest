@@ -1508,8 +1508,8 @@ namespace AyGestRest.Views
 
             try
             {
-                // Guardar é uma operação de rascunho: não paga, não baixa stock,
-                // não emite factura e não altera o estado da mesa para Livre.
+                // Guardar mantém o pedido aberto e reserva imediatamente o stock.
+                // Não paga, não factura e não liberta a mesa.
                 using var transaction = _db.Database.BeginTransaction();
 
                 var itensAntigos = _db.OrderItems
@@ -1610,7 +1610,7 @@ namespace AyGestRest.Views
                 AtualizarContadorComandas();
 
                 if (mostrarConfirmacao)
-                    MostrarMensagemStatus($"Pedido #{_ordemAtual.Id:D6} guardado. Continua aberto para adicionar mais produtos.",
+                    MostrarMensagemStatus($"Pedido #{_ordemAtual.Id:D6} guardado. Stock reservado; continua aberto para adicionar produtos.",
                         Brushes.ForestGreen, 5);
 
                 return true;
