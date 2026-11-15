@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -95,12 +96,32 @@ namespace AyGestRest.Data
                 string normalized = colName.Trim().ToLowerInvariant();
                 if (existingColumns.Contains(normalized)) continue;
 
+                // Reconsulta imediatamente antes do ALTER TABLE. Mais do que um
+                // contexto pode arrancar ao mesmo tempo e tentar sincronizar a mesma coluna.
+                if (ColumnExists(db, tableName, colName))
+                {
+                    existingColumns.Add(normalized);
+                    continue;
+                }
+
                 string sql = $"ALTER TABLE [{tableName}] ADD COLUMN [{colName}] {MapToSqliteType(prop)}";
                 if (!prop.IsNullable && !prop.IsPrimaryKey())
                     sql += " NOT NULL DEFAULT " + GetSafeDefaultValue(prop);
                 sql += ";";
 
-                ExecuteNonQuery(db, sql);
+                try
+                {
+                    ExecuteNonQuery(db, sql);
+                }
+                catch (SqliteException ex) when (
+                    ex.SqliteErrorCode == 1 &&
+                    ex.Message.Contains("duplicate column name", StringComparison.OrdinalIgnoreCase) &&
+                    ColumnExists(db, tableName, colName))
+                {
+                    // Outra inicialização adicionou a coluna entre a verificação e o ALTER.
+                    // Só ignoramos o erro depois de confirmar que a coluna existe mesmo.
+                }
+
                 existingColumns.Add(normalized);
             }
         }
@@ -128,6 +149,19 @@ namespace AyGestRest.Data
             parameter.Value = tableName;
             cmd.Parameters.Add(parameter);
             return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+        }
+
+        private static bool ColumnExists(DbContext db, string tableName, string columnName)
+        {
+            using var cmd = db.Database.GetDbConnection().CreateCommand();
+            cmd.CommandText = $"PRAGMA table_info([{tableName}]);";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (string.Equals(reader.GetString(1).Trim(), columnName.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private static List<string> GetExistingColumns(DbContext db, string tableName)
