@@ -152,13 +152,7 @@ namespace AyGestRest.Services
                     total,
                     alreadyPaid + due,
                     change,
-                    normalizedPayments.Select(p => new PaymentPart
-                    {
-                        Amount = p.AppliedAmount,
-                        Method = p.Source.Method,
-                        Reference = p.Source.Reference,
-                        Notes = p.Source.Notes
-                    }).ToArray());
+                    normalizedPayments.Select(p => new PaymentPart(p.AppliedAmount, p.Source.Method, p.Source.Reference, p.Source.Notes)).ToArray());
             }
             catch
             {
@@ -296,9 +290,8 @@ namespace AyGestRest.Services
             p.Value = value ?? DBNull.Value;
             command.Parameters.Add(p);
         }
+        private sealed record NormalizedPayment(PaymentPart Source, decimal AppliedAmount);
     }
-
-    private sealed record NormalizedPayment(PaymentPart Source, decimal AppliedAmount);
 
     public sealed record SaleCompletionResult(
         int OrderId,

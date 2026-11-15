@@ -36,6 +36,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- Fornece apenas os controlos e propriedades XAML legados (PackIcon/HintAssist).
+         Nenhum tema Material Design é carregado; a identidade visual continua a ser AyGestCleanTheme. -->
+    <PackageReference Include="MaterialDesignThemes" Version="5.4.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
     <PackageReference Include="NPOI" Version="2.7.0" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />

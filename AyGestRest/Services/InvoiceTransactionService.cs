@@ -69,7 +69,7 @@ namespace AyGestRest.Services
                 ValorPago = valorPago,
                 Troco = troco,
                 MetodoPagamento = string.Join(", ", order.Payments.Select(p => !string.IsNullOrWhiteSpace(p.TipoPagamento) ? p.TipoPagamento : p.Type.ToString()).Distinct()),
-                NUITEmitente = config?.Nuit ?? string.Empty,
+                NUITEmitente = config?.NIF ?? string.Empty,
                 NomeEmitente = config?.RestaurantName ?? _config.BusinessName,
                 Estado = FaturaEstado.Emitida,
                 TerminalId = terminalId,

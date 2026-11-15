@@ -5,40 +5,40 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AyGestRest.Views"
              mc:Ignorable="d" 
-             Background="#F0F2F5"
+             Background="#F4F6FA"
              Loaded="POSControl_Loaded"
              x:Name="userControl"
              SizeChanged="UserControl_SizeChanged">
 
     <UserControl.Resources>
         <!-- Cores Principais -->
-        <SolidColorBrush x:Key="PrimaryColor" Color="#4F46E5"/>
-        <SolidColorBrush x:Key="PrimaryDark" Color="#4338CA"/>
-        <SolidColorBrush x:Key="PrimaryLight" Color="#EEF2FF"/>
-        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
-        <SolidColorBrush x:Key="SuccessDark" Color="#059669"/>
-        <SolidColorBrush x:Key="DangerColor" Color="#EF4444"/>
-        <SolidColorBrush x:Key="WarningColor" Color="#F59E0B"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#1F2937"/>
-        <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
-        <SolidColorBrush x:Key="TextLight" Color="#9CA3AF"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
-        <SolidColorBrush x:Key="BackgroundLight" Color="#F9FAFB"/>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#3659D9"/>
+        <SolidColorBrush x:Key="PrimaryDark" Color="#2949BD"/>
+        <SolidColorBrush x:Key="PrimaryLight" Color="#EAF0FF"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#16A36A"/>
+        <SolidColorBrush x:Key="SuccessDark" Color="#118357"/>
+        <SolidColorBrush x:Key="DangerColor" Color="#D94848"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#D99524"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#172033"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#687386"/>
+        <SolidColorBrush x:Key="TextLight" Color="#98A2B3"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E3E8F0"/>
+        <SolidColorBrush x:Key="BackgroundLight" Color="#F4F6FA"/>
         <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
 
         <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#4F46E5" Offset="0"/>
-            <GradientStop Color="#7C3AED" Offset="1"/>
+            <GradientStop Color="#3659D9" Offset="0"/>
+            <GradientStop Color="#3659D9" Offset="1"/>
         </LinearGradientBrush>
 
         <LinearGradientBrush x:Key="SuccessGradient" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#10B981" Offset="0"/>
-            <GradientStop Color="#059669" Offset="1"/>
+            <GradientStop Color="#16A36A" Offset="0"/>
+            <GradientStop Color="#118357" Offset="1"/>
         </LinearGradientBrush>
 
         <LinearGradientBrush x:Key="DangerGradient" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#EF4444" Offset="0"/>
-            <GradientStop Color="#DC2626" Offset="1"/>
+            <GradientStop Color="#D94848" Offset="0"/>
+            <GradientStop Color="#B83232" Offset="1"/>
         </LinearGradientBrush>
 
         <!-- Sombras -->
@@ -421,7 +421,7 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#EF4444"/>
+                                                <Setter Property="Background" Value="#D94848"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -437,9 +437,9 @@
                                     <TextBlock x:Name="txtReservaCliente" Text="Cliente: Carregando..."
                                                FontSize="12" FontWeight="SemiBold" Foreground="#4B5563"/>
                                     <TextBlock x:Name="txtReservaHorario" Text="Horário: --:-- - --:--"
-                                               FontSize="11" Foreground="#6B7280" Margin="0,3,0,0"/>
+                                               FontSize="11" Foreground="#687386" Margin="0,3,0,0"/>
                                     <TextBlock x:Name="txtReservaPessoas" Text="Pessoas: --"
-                                               FontSize="11" Foreground="#6B7280"/>
+                                               FontSize="11" Foreground="#687386"/>
                                 </StackPanel>
                             </Border>
                             <TextBlock Text="Digite o código da reserva:" FontSize="12" FontWeight="SemiBold"
@@ -478,7 +478,7 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="border" Property="Background" Value="#7C3AED"/>
+                                                            <Setter TargetName="border" Property="Background" Value="#3659D9"/>
                                                         </Trigger>
                                                         <Trigger Property="IsPressed" Value="True">
                                                             <Setter TargetName="border" Property="Background" Value="#6D28D9"/>
@@ -495,7 +495,7 @@
                                     BorderThickness="1" Padding="8" Margin="0,8,0,0" Visibility="Collapsed"
                                     CornerRadius="4">
                                 <TextBlock x:Name="txtErroAtivacao" Text="" FontSize="11"
-                                           Foreground="#DC2626" TextWrapping="Wrap"/>
+                                           Foreground="#B83232" TextWrapping="Wrap"/>
                             </Border>
                         </StackPanel>
                     </Border>
@@ -538,7 +538,7 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#EF4444"/>
+                                                <Setter Property="Background" Value="#D94848"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -562,12 +562,12 @@
                                             <TextBlock Text="TOTAL A PAGAR" FontSize="11" 
                                                        Foreground="#64748B" FontWeight="SemiBold"/>
                                             <TextBlock x:Name="txtPopupPagamentoMultiploTotal" 
-                                                       FontSize="22" FontWeight="ExtraBold" Foreground="#1E293B"
+                                                       FontSize="22" FontWeight="ExtraBold" Foreground="#FFFFFF"
                                                        Margin="0,2,0,0"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock x:Name="txtRestanteMultiplo" Text="Restante: 0,00 Mtn"
-                                                       FontSize="12" Foreground="#EF4444" FontWeight="SemiBold"
+                                                       FontSize="12" Foreground="#D94848" FontWeight="SemiBold"
                                                        HorizontalAlignment="Right"/>
                                         </StackPanel>
                                     </Grid>
@@ -607,7 +607,7 @@
 
                                         <Button x:Name="btnAdicionarMetodo" Grid.Column="2" 
                                                 Content="➕ ADICIONAR" 
-                                                Background="#4F46E5" Foreground="White"
+                                                Background="#3659D9" Foreground="White"
                                                 FontWeight="SemiBold" FontSize="11"
                                                 Height="36" Padding="12,0"
                                                 Click="BtnAdicionarMetodo_Click"
@@ -620,13 +620,13 @@
                                 </Border>
 
                                 <!-- Lista de Métodos Adicionados -->
-                                <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1" Padding="0">
+                                <Border Background="White" CornerRadius="8" BorderBrush="#E3E8F0" BorderThickness="1" Padding="0">
                                     <ItemsControl x:Name="itemsMetodosPagamento">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Background="{Binding Background}" 
                                                         Padding="10,8" 
-                                                        BorderBrush="#E5E7EB" 
+                                                        BorderBrush="#E3E8F0" 
                                                         BorderThickness="0,0,0,1">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
@@ -639,14 +639,14 @@
                                                         <TextBlock Text="{Binding Icon}" FontSize="16" Margin="0,0,10,0"/>
                                                         <TextBlock Grid.Column="1" Text="{Binding Metodo}" 
                                                                    FontSize="13" FontWeight="SemiBold"
-                                                                   Foreground="#1F2937" VerticalAlignment="Center"/>
+                                                                   Foreground="#172033" VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="2" Text="{Binding Valor, StringFormat='{}{0:F2} Mtn'}" 
                                                                    FontSize="13" FontWeight="Bold"
-                                                                   Foreground="#10B981" VerticalAlignment="Center"
+                                                                   Foreground="#16A36A" VerticalAlignment="Center"
                                                                    Margin="0,0,10,0"/>
                                                         <Button Grid.Column="3" Content="✕" 
                                                                 Width="24" Height="24"
-                                                                Background="Transparent" Foreground="#EF4444"
+                                                                Background="Transparent" Foreground="#D94848"
                                                                 BorderThickness="0" FontSize="12"
                                                                 Cursor="Hand"
                                                                 Click="BtnRemoverMetodoPagamento_Click"
@@ -682,7 +682,7 @@
                                                    Foreground="#475569" VerticalAlignment="Center"/>
                                         <TextBlock x:Name="txtTotalDistribuido" Grid.Column="1" 
                                                    Text="0,00 Mtn" FontSize="14" FontWeight="Bold"
-                                                   Foreground="#10B981" VerticalAlignment="Center"/>
+                                                   Foreground="#16A36A" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
 
@@ -690,7 +690,7 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
                                     <Button x:Name="btnFinalizarPagamentoMultiplo" 
                                             Content="✅ FINALIZAR PAGAMENTO" 
-                                            Background="#10B981" Foreground="White"
+                                            Background="#16A36A" Foreground="White"
                                             FontWeight="Bold" FontSize="13"
                                             Height="40" Padding="24,0"
                                             Click="BtnFinalizarPagamentoMultiplo_Click"
@@ -701,7 +701,7 @@
                                     </Button>
                                     <Button x:Name="btnCancelarPagamentoMultiplo" 
                                             Content="❌ CANCELAR" 
-                                            Background="#EF4444" Foreground="White"
+                                            Background="#D94848" Foreground="White"
                                             FontWeight="SemiBold" FontSize="12"
                                             Height="40" Padding="16,0" Margin="8,0,0,0"
                                             Click="BtnCancelarPagamentoMultiplo_Click"
@@ -763,7 +763,7 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#EF4444"/>
+                                                <Setter Property="Background" Value="#D94848"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -787,7 +787,7 @@
                                             <TextBlock Text="TOTAL A PAGAR" FontSize="11" 
                                            Foreground="#64748B" FontWeight="SemiBold"/>
                                             <TextBlock x:Name="txtPagamentoSimplificadoTotal" 
-                                           FontSize="22" FontWeight="ExtraBold" Foreground="#1E293B"
+                                           FontSize="22" FontWeight="ExtraBold" Foreground="#FFFFFF"
                                            Margin="0,2,0,0"/>
                                         </StackPanel>
                                         <Border Grid.Column="1" Background="#DCFCE7" CornerRadius="4" Padding="6,2"
@@ -800,7 +800,7 @@
 
                                 <!-- TOGGLE: Pagamento Simples / Múltiplo -->
                                 <Border Background="#F8FAFC" CornerRadius="8" Padding="12" Margin="0,0,0,12"
-                            BorderBrush="#E5E7EB" BorderThickness="1">
+                            BorderBrush="#E3E8F0" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -808,8 +808,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
-                                            <TextBlock Text="🔄 Pagamento Múltiplo" FontSize="12" FontWeight="SemiBold" Foreground="#1E293B"/>
-                                            <TextBlock Text="Ative para dividir entre vários métodos" FontSize="9" Foreground="#94A3B8"/>
+                                            <TextBlock Text="🔄 Pagamento Múltiplo" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock Text="Ative para dividir entre vários métodos" FontSize="9" Foreground="#687386"/>
                                         </StackPanel>
                                         <ToggleButton x:Name="tglPagamentoMultiplo" Grid.Column="1" 
                                           Style="{StaticResource ToggleSwitchStyle}"
@@ -817,13 +817,13 @@
                                           Unchecked="TglPagamentoMultiplo_Unchecked"
                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
                                         <TextBlock Grid.Column="2" x:Name="txtToggleStatus" Text="OFF" 
-                                       FontSize="10" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                       FontSize="10" FontWeight="Bold" Foreground="#687386" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
 
                                 <!-- Container de Métodos -->
                                 <Border Background="White" CornerRadius="8" 
-                            BorderBrush="#E5E7EB" BorderThickness="1">
+                            BorderBrush="#E3E8F0" BorderThickness="1">
                                     <StackPanel>
                                         <!-- MODO SIMPLES (Padrão) - Botões de métodos -->
                                         <StackPanel x:Name="panelMetodosSimples">
@@ -846,7 +846,7 @@
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Border Background="{Binding Background}" Padding="8,6" 
-                                                        BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                                                        BorderBrush="#E3E8F0" BorderThickness="0,0,0,1">
                                                                 <Grid>
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto"/>
@@ -856,11 +856,11 @@
                                                                     </Grid.ColumnDefinitions>
                                                                     <TextBlock Text="{Binding Icon}" FontSize="14" Margin="0,0,8,0"/>
                                                                     <TextBlock Grid.Column="1" Text="{Binding Metodo}" 
-                                                                   FontSize="12" FontWeight="SemiBold" Foreground="#1F2937"/>
+                                                                   FontSize="12" FontWeight="SemiBold" Foreground="#172033"/>
                                                                     <TextBlock Grid.Column="2" Text="{Binding Valor, StringFormat='{}{0:F2} Mtn'}" 
-                                                                   FontSize="12" FontWeight="Bold" Foreground="#10B981" Margin="0,0,8,0"/>
+                                                                   FontSize="12" FontWeight="Bold" Foreground="#16A36A" Margin="0,0,8,0"/>
                                                                     <Button Grid.Column="3" Content="✕" Width="22" Height="22"
-                                                                Background="Transparent" Foreground="#EF4444"
+                                                                Background="Transparent" Foreground="#D94848"
                                                                 BorderThickness="0" FontSize="10" Cursor="Hand"
                                                                 Click="BtnRemoverMetodoMulti_Click" Tag="{Binding}">
                                                                         <Button.Template>
@@ -892,14 +892,14 @@
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="Total Distribuído:" FontSize="11" FontWeight="SemiBold" Foreground="#475569"/>
                                                     <TextBlock x:Name="txtTotalDistribuidoMulti" Grid.Column="1" 
-                                                   Text="0,00 Mtn" FontSize="13" FontWeight="Bold" Foreground="#10B981"/>
+                                                   Text="0,00 Mtn" FontSize="13" FontWeight="Bold" Foreground="#16A36A"/>
                                                 </Grid>
                                             </Border>
 
                                             <!-- Botão para finalizar no modo múltiplo -->
                                             <Button x:Name="btnFinalizarMultiplo" 
                                         Content="✅ FINALIZAR PAGAMENTO MÚLTIPLO" 
-                                        Background="#10B981" Foreground="White"
+                                        Background="#16A36A" Foreground="White"
                                         FontWeight="Bold" FontSize="12"
                                         Height="40" Margin="6,6,6,6"
                                         Click="BtnFinalizarMultiplo_Click"
@@ -935,7 +935,7 @@
             </Border.RenderTransform>
             <Grid>
                 <!-- Cabeçalho arrastável -->
-                <Border Background="#1E293B" Height="36" CornerRadius="12,12,0,0"
+                <Border Background="#FFFFFF" Height="36" CornerRadius="12,12,0,0"
                         MouseLeftButtonDown="PopupRecibo_MouseLeftButtonDown"
                         MouseLeftButtonUp="PopupRecibo_MouseLeftButtonUp"
                         MouseMove="PopupRecibo_MouseMove"
@@ -960,7 +960,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#EF4444"/>
+                                            <Setter Property="Background" Value="#D94848"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -980,10 +980,10 @@
                         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="2">
                             <StackPanel x:Name="stackRecibo" Background="White" Margin="0">
                                 <!-- Cabeçalho -->
-                                <Border Background="White" Padding="8,6" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                                <Border Background="White" Padding="8,6" BorderBrush="#E3E8F0" BorderThickness="0,0,0,1">
                                     <StackPanel>
                                         <TextBlock Text="{Binding RestaurantName, ElementName=userControl}"
-                                                   FontSize="11" FontWeight="Bold" Foreground="#1E293B"
+                                                   FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"
                                                    TextAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                                         <TextBlock Text="RECIBO DA VENDA" FontSize="9"
                                                    Foreground="{StaticResource TextSecondary}" TextAlignment="Center" Margin="0,2,0,0"/>
@@ -997,7 +997,7 @@
                                 </Border>
 
                                 <!-- Itens -->
-                                <Border Background="#F8FAFC" Padding="6,4" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                                <Border Background="#F8FAFC" Padding="6,4" BorderBrush="#E3E8F0" BorderThickness="0,0,0,1">
                                     <ItemsControl x:Name="itemsRecibo">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -1013,7 +1013,7 @@
                                                                FontSize="9" Foreground="#374151" Margin="6,0,6,0"
                                                                TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="130"/>
                                                     <TextBlock Grid.Column="2" Text="{Binding SubTotal, StringFormat='{}{0:F2} Mtn'}"
-                                                               FontSize="9" FontWeight="SemiBold" Foreground="#10B981"
+                                                               FontSize="9" FontWeight="SemiBold" Foreground="#16A36A"
                                                                MinWidth="45" TextAlignment="Right"/>
                                                 </Grid>
                                             </DataTemplate>
@@ -1040,24 +1040,24 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="Desconto" FontSize="9" Foreground="{StaticResource TextSecondary}"/>
                                             <TextBlock x:Name="txtReciboDesconto" Grid.Column="1"
-                                                       Text="0,00 Mtn" FontSize="9" FontWeight="SemiBold" Foreground="#EF4444"/>
+                                                       Text="0,00 Mtn" FontSize="9" FontWeight="SemiBold" Foreground="#D94848"/>
                                         </Grid>
                                         <Grid Margin="0,6,0,0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="TOTAL" FontSize="11" FontWeight="Bold" Foreground="#1E293B"/>
+                                            <TextBlock Text="TOTAL" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"/>
                                             <TextBlock x:Name="txtReciboTotal" Grid.Column="1"
-                                                       Text="0,00 Mtn" FontSize="11" FontWeight="ExtraBold" Foreground="#10B981"/>
+                                                       Text="0,00 Mtn" FontSize="11" FontWeight="ExtraBold" Foreground="#16A36A"/>
                                         </Grid>
                                         <Border Background="#ECFDF5" Padding="6,4" Margin="0,8,0,0" CornerRadius="4">
                                             <StackPanel>
                                                 <TextBlock x:Name="txtReciboStatus" Text="Aguardando pagamento"
-                                                           FontSize="8" FontWeight="SemiBold" Foreground="#059669"
+                                                           FontSize="8" FontWeight="SemiBold" Foreground="#118357"
                                                            TextAlignment="Center"/>
                                                 <TextBlock x:Name="txtReciboPagamento" Text="Forma de pagamento: ---"
-                                                           FontSize="7" Foreground="#6B7280" TextAlignment="Center" Margin="0,1,0,0"/>
+                                                           FontSize="7" Foreground="#687386" TextAlignment="Center" Margin="0,1,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -1067,7 +1067,7 @@
 
                         <!-- Rodapé -->
                         <Border Grid.Row="1" Background="#F1F5F9" Padding="6,4" 
-                                BorderBrush="#E5E7EB" BorderThickness="0,1,0,0"
+                                BorderBrush="#E3E8F0" BorderThickness="0,1,0,0"
                                 CornerRadius="0,0,12,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -1076,7 +1076,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding ItemCount, ElementName=userControl}" FontSize="8" Foreground="#475569"/>
                                 <TextBlock Grid.Column="1" x:Name="txtReciboOperador"
-                                           Text="{Binding OperatorName, ElementName=userControl}" FontSize="7" Foreground="#6B7280"/>
+                                           Text="{Binding OperatorName, ElementName=userControl}" FontSize="7" Foreground="#687386"/>
                             </Grid>
                         </Border>
                     </Grid>
@@ -1093,7 +1093,7 @@
             </Grid.RowDefinitions>
 
             <!-- HEADER -->
-            <Border Grid.Row="0" Background="#1E293B" Padding="10">
+            <Border Grid.Row="0" Background="#FFFFFF" Padding="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -1103,11 +1103,11 @@
 
                     <!-- Esquerda: Mesa e Ações -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#334155" Padding="8,5" CornerRadius="6">
+                        <Border Background="#F4F6FA" Padding="8,5" CornerRadius="6">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="MESA:" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,6,0"/>
-                                <TextBlock x:Name="txtMesaAtual" Text="NENHUMA" FontSize="16" FontWeight="ExtraBold" Foreground="#FCD34D"/>
-                                <TextBlock x:Name="txtTempoMesa" FontSize="10" Foreground="#93C5FD" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="MESA:" FontSize="11" FontWeight="Bold" Foreground="#687386" Margin="0,0,6,0"/>
+                                <TextBlock x:Name="txtMesaAtual" Text="NENHUMA" FontSize="16" FontWeight="ExtraBold" Foreground="#3659D9"/>
+                                <TextBlock x:Name="txtTempoMesa" FontSize="10" Foreground="#687386" Margin="8,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
@@ -1116,23 +1116,27 @@
                                     Background="#3B82F6" Style="{StaticResource PrimaryButton}"
                                     Height="32" FontSize="10" Click="BtnNovaComanda_Click"
                                     ToolTip="Trocar mesa"/>
+                            <Button x:Name="btnGuardarPedido" Content="💾 GUARDAR" Margin="0,0,4,0"
+                                    Background="#3659D9" Style="{StaticResource PrimaryButton}"
+                                    Height="32" FontSize="10" Click="BtnGuardarPedido_Click"
+                                    ToolTip="Guardar alterações sem fechar o pedido"/>
                             <Button x:Name="btnNovaComanda" Content="📋 NOVA" Margin="0,0,4,0"
-                                    Background="#10B981" Style="{StaticResource SuccessButton}"
+                                    Background="#16A36A" Style="{StaticResource SuccessButton}"
                                     Height="32" FontSize="10" Click="BtnNovaComanda_Click"
                                     ToolTip="Nova comanda"/>
                             <Button x:Name="btnCancelarVenda" Content="❌ CANC" Margin="0,0,4,0"
-                                    Background="#EF4444" Style="{StaticResource BaseButton}"
+                                    Background="#D94848" Style="{StaticResource BaseButton}"
                                     Height="32" FontSize="10" Click="BtnCancelarVenda_Click"
                                     ToolTip="Cancelar venda"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Centro: Total -->
-                    <Border Grid.Column="1" Background="#334155" Padding="12,6" CornerRadius="8"
+                    <Border Grid.Column="1" Background="#F4F6FA" Padding="12,6" CornerRadius="8"
                             HorizontalAlignment="Center" VerticalAlignment="Center">
                         <StackPanel>
                             <TextBlock Text="TOTAL A PAGAR" FontSize="10" FontWeight="SemiBold"
-                                       Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                                       Foreground="#687386" HorizontalAlignment="Center"/>
                             <TextBlock x:Name="txtTotalHeader" Text="0,00 Mtn" FontSize="22"
                                        FontWeight="ExtraBold" Foreground="White"
                                        HorizontalAlignment="Center" Margin="0,2,0,0"/>
@@ -1141,25 +1145,25 @@
 
                     <!-- Direita: Info -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Border Background="#334155" Padding="6" Margin="0,0,4,0" CornerRadius="4">
+                        <Border Background="#F4F6FA" Padding="6" Margin="0,0,4,0" CornerRadius="4">
                             <StackPanel>
-                                <TextBlock Text="OPERADOR" FontSize="7" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                                <TextBlock Text="OPERADOR" FontSize="7" Foreground="#687386" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="txtUsuario" Text="NÃO IDENTIFICADO" FontSize="9"
-                                           FontWeight="Bold" Foreground="#ECF0F1" HorizontalAlignment="Center"/>
+                                           FontWeight="Bold" Foreground="#172033" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#334155" Padding="6" Margin="0,0,4,0" CornerRadius="4">
+                        <Border Background="#F4F6FA" Padding="6" Margin="0,0,4,0" CornerRadius="4">
                             <StackPanel>
-                                <TextBlock Text="HORA" FontSize="7" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                                <TextBlock Text="HORA" FontSize="7" Foreground="#687386" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="txtDataHora" FontSize="9" FontWeight="Bold"
-                                           Foreground="#ECF0F1" HorizontalAlignment="Center"/>
+                                           Foreground="#172033" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#334155" Padding="6" CornerRadius="4">
+                        <Border Background="#F4F6FA" Padding="6" CornerRadius="4">
                             <StackPanel>
-                                <TextBlock Text="ÚLTIMO TALÃO" FontSize="7" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                                <TextBlock Text="ÚLTIMO TALÃO" FontSize="7" Foreground="#687386" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="txtUltimoTalao" FontSize="11" FontWeight="ExtraBold"
-                                           Foreground="#34D399" HorizontalAlignment="Center"/>
+                                           Foreground="#16A36A" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -1167,7 +1171,7 @@
             </Border>
 
             <!-- MENSAGEM STATUS -->
-            <Border x:Name="borderMensagemStatus" Background="#FEF3C7" BorderBrush="#FCD34D"
+            <Border x:Name="borderMensagemStatus" Background="#FEF3C7" BorderBrush="#3659D9"
                     BorderThickness="1" Grid.Row="0" Margin="8,0,8,8"
                     VerticalAlignment="Bottom" Height="28" Visibility="Collapsed"
                     CornerRadius="6">
@@ -1190,7 +1194,7 @@
 
                 <!-- COLUNA 1: MESAS -->
                 <Border Background="White" Padding="8" CornerRadius="10"
-                        BorderBrush="#E5E7EB" BorderThickness="1"
+                        BorderBrush="#E3E8F0" BorderThickness="1"
                         Effect="{StaticResource ShadowLight}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -1201,9 +1205,9 @@
 
                         <!-- Título e Pesquisa -->
                         <StackPanel Grid.Row="0" Margin="0,0,0,6">
-                            <TextBlock Text="📋 MESAS" FontSize="13" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,4"/>
+                            <TextBlock Text="📋 MESAS" FontSize="13" FontWeight="Bold" Foreground="#172033" Margin="0,0,0,4"/>
 
-                            <Border Background="#F9FAFB" Padding="4" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6">
+                            <Border Background="#F4F6FA" Padding="4" BorderBrush="#E3E8F0" BorderThickness="1" CornerRadius="6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -1211,15 +1215,15 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="txtPesquisaTalao" Grid.Column="0"
                                              Height="28" FontSize="11" Padding="4"
-                                             Background="Transparent" Foreground="#6B7280"
+                                             Background="Transparent" Foreground="#687386"
                                              BorderThickness="0" VerticalContentAlignment="Center"
                                              KeyDown="TxtPesquisaTalao_KeyDown">
                                         <TextBox.Style>
                                             <Style TargetType="TextBox">
-                                                <Setter Property="Foreground" Value="#6B7280"/>
+                                                <Setter Property="Foreground" Value="#687386"/>
                                                 <Style.Triggers>
                                                     <Trigger Property="IsFocused" Value="True">
-                                                        <Setter Property="Foreground" Value="#1F2937"/>
+                                                        <Setter Property="Foreground" Value="#172033"/>
                                                     </Trigger>
                                                     <Trigger Property="Text" Value="">
                                                         <Setter Property="Background">
@@ -1227,7 +1231,7 @@
                                                                 <VisualBrush AlignmentX="Left" AlignmentY="Center" Stretch="None">
                                                                     <VisualBrush.Visual>
                                                                         <TextBlock Text="🔍 Buscar talão..."
-                                                                                   Foreground="#9CA3AF" FontSize="10"/>
+                                                                                   Foreground="#98A2B3" FontSize="10"/>
                                                                     </VisualBrush.Visual>
                                                                 </VisualBrush>
                                                             </Setter.Value>
@@ -1239,7 +1243,7 @@
                                     </TextBox>
                                     <Button x:Name="btnBuscarTalao" Grid.Column="1" Content="🔍"
                                             Width="28" Height="28" Margin="4,0,0,0" FontSize="11"
-                                            Background="#4F46E5" Style="{StaticResource PrimaryButton}"
+                                            Background="#3659D9" Style="{StaticResource PrimaryButton}"
                                             Click="BtnBuscarTalao_Click"/>
                                 </Grid>
                             </Border>
@@ -1251,8 +1255,8 @@
                         </ScrollViewer>
 
                         <!-- Cliente -->
-                        <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="6" Padding="6,4" 
-                                BorderBrush="#E5E7EB" BorderThickness="1" Margin="0,6,0,0">
+                        <Border Grid.Row="2" Background="#F4F6FA" CornerRadius="6" Padding="6,4" 
+                                BorderBrush="#E3E8F0" BorderThickness="1" Margin="0,6,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -1275,14 +1279,14 @@
 
                         <!-- Info -->
                         <StackPanel Grid.Row="2" Margin="0,6,0,0">
-                            <Border Background="#F9FAFB" Padding="6" CornerRadius="6">
+                            <Border Background="#F4F6FA" Padding="6" CornerRadius="6">
                                 <StackPanel>
                                     <TextBlock Text="🏪 COMANDAS ATIVAS" FontSize="10" FontWeight="SemiBold"
                                                Foreground="#374151" Margin="0,0,0,2"/>
                                     <TextBlock x:Name="txtContadorComandas" Text="0 comandas abertas"
-                                               FontSize="9" Foreground="#6B7280"/>
+                                               FontSize="9" Foreground="#687386"/>
                                     <TextBlock x:Name="txtInfoMesa" Text="Selecione uma mesa para começar"
-                                               FontSize="8" Foreground="#6B7280" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                               FontSize="8" Foreground="#687386" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -1291,7 +1295,7 @@
 
                 <!-- COLUNA 3: PRODUTOS -->
                 <Border Grid.Column="2" Background="White" CornerRadius="10"
-                        BorderBrush="#E5E7EB" BorderThickness="1"
+                        BorderBrush="#E3E8F0" BorderThickness="1"
                         Effect="{StaticResource ShadowLight}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -1301,8 +1305,8 @@
                         </Grid.RowDefinitions>
 
                         <!-- Pesquisa -->
-                        <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="10,10,0,0"
-                                Padding="8,6" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                        <Border Grid.Row="0" Background="#F4F6FA" CornerRadius="10,10,0,0"
+                                Padding="8,6" BorderBrush="#E3E8F0" BorderThickness="0,0,0,1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -1315,7 +1319,7 @@
                                          KeyDown="TxtPesquisa_KeyDown"/>
                                 <Button x:Name="btnLimparPesquisa" Grid.Column="2" Content="✕"
                                         Width="36" Height="36" Margin="6,0,0,0"
-                                        Background="Transparent" Foreground="#6B7280"
+                                        Background="Transparent" Foreground="#687386"
                                         FontSize="12" Click="BtnLimparPesquisa_Click"
                                         Cursor="Hand"/>
                             </Grid>
@@ -1336,7 +1340,7 @@
                                     <StackPanel x:Name="pnlCategorias" Orientation="Horizontal" VerticalAlignment="Center"/>
                                 </ScrollViewer>
                                 <TextBlock Grid.Column="2" x:Name="txtContadorItens" Text="(0 itens)"
-                                           FontSize="10" Foreground="#059669" VerticalAlignment="Center"/>
+                                           FontSize="10" Foreground="#118357" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -1358,7 +1362,7 @@
 
                     <!-- CARRINHO -->
                     <Border Background="White" CornerRadius="10"
-                            BorderBrush="#E5E7EB" BorderThickness="1"
+                            BorderBrush="#E3E8F0" BorderThickness="1"
                             Effect="{StaticResource ShadowLight}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -1368,17 +1372,17 @@
                             </Grid.RowDefinitions>
 
                             <!-- Cabeçalho -->
-                            <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="10,10,0,0"
-                                    Padding="8,6" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                            <Border Grid.Row="0" Background="#F4F6FA" CornerRadius="10,10,0,0"
+                                    Padding="8,6" BorderBrush="#E3E8F0" BorderThickness="0,0,0,1">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="🛒 CARRINHO" FontSize="13" FontWeight="Bold"
-                                               Foreground="#1F2937" Margin="0,0,8,0"/>
+                                               Foreground="#172033" Margin="0,0,8,0"/>
                                     <Button x:Name="btnLimparCarrinho" Content="🗑️ LIMPAR"
-                                            Background="#EF4444" Style="{StaticResource BaseButton}"
+                                            Background="#D94848" Style="{StaticResource BaseButton}"
                                             Height="26" FontSize="9" Padding="8,0"
                                             Click="BtnLimparCarrinho_Click"/>
                                     <Button x:Name="btnImprimirCozinha" Content="🍳 COZINHA"
-                                            Background="#F59E0B" Style="{StaticResource BaseButton}"
+                                            Background="#D99524" Style="{StaticResource BaseButton}"
                                             Height="26" FontSize="9" Padding="8,0"
                                             Click="BtnImprimirCozinha_Click"
                                             ToolTip="Imprimir apenas o pedido da cozinha"
@@ -1400,12 +1404,12 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="{Binding Quantity, StringFormat='{}{0}x'}" FontSize="13"
-                                                               FontWeight="Bold" Foreground="#4F46E5" Margin="0,0,8,0"/>
+                                                               FontWeight="Bold" Foreground="#3659D9" Margin="0,0,8,0"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding ProductName}" FontSize="11"
-                                                               FontWeight="SemiBold" Foreground="#1F2937" TextWrapping="Wrap"/>
+                                                               FontWeight="SemiBold" Foreground="#172033" TextWrapping="Wrap"/>
                                                     <TextBlock Grid.Column="2" 
                                                                Text="{Binding SubTotal, StringFormat='{}{0:F2} Mtn'}"
-                                                               FontSize="12" FontWeight="Bold" Foreground="#10B981"/>
+                                                               FontSize="12" FontWeight="Bold" Foreground="#16A36A"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -1414,8 +1418,8 @@
                             </ScrollViewer>
 
                             <!-- Resumo -->
-                            <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="0,0,10,10"
-                                    Padding="8" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0">
+                            <Border Grid.Row="2" Background="#F4F6FA" CornerRadius="0,0,10,10"
+                                    Padding="8" BorderBrush="#E3E8F0" BorderThickness="0,1,0,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -1427,18 +1431,18 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Subtotal" FontSize="11" Foreground="#6B7280"/>
+                                            <TextBlock Text="Subtotal" FontSize="11" Foreground="#687386"/>
                                             <TextBlock x:Name="txtSubtotalCarrinho" Grid.Column="1"
-                                                       Text="0,00 Mtn" FontSize="12" FontWeight="Bold" Foreground="#1F2937"/>
+                                                       Text="0,00 Mtn" FontSize="12" FontWeight="Bold" Foreground="#172033"/>
                                         </Grid>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Total Itens" FontSize="11" Foreground="#6B7280"/>
+                                            <TextBlock Text="Total Itens" FontSize="11" Foreground="#687386"/>
                                             <TextBlock x:Name="txtTotalItensCarrinho" Grid.Column="1"
-                                                       Text="0" FontSize="12" FontWeight="Bold" Foreground="#4F46E5"/>
+                                                       Text="0" FontSize="12" FontWeight="Bold" Foreground="#3659D9"/>
                                         </Grid>
                                     </StackPanel>
                                 </Grid>
@@ -1447,7 +1451,7 @@
                     </Border>
 
                     <!-- PAGAMENTO -->
-                    <Border Grid.Row="2" Background="#EEF2FF" CornerRadius="10"
+                    <Border Grid.Row="2" Background="#EAF0FF" CornerRadius="10"
                             BorderBrush="#C7D2FE" BorderThickness="1" Padding="8">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -1467,7 +1471,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="🎯 DESCONTO" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="#1F2937" VerticalAlignment="Center"/>
+                                               Foreground="#172033" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBox x:Name="txtDesconto" Width="60" Height="30"
                                                  FontSize="12" Text="0" TextAlignment="Right"
@@ -1492,7 +1496,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="💰 RECEBIDO" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="#1F2937" VerticalAlignment="Center"/>
+                                               Foreground="#172033" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txtValorRecebido" Grid.Column="1" Height="30"
                                              FontSize="13" TextAlignment="Right" Padding="4"
                                              TextChanged="TxtValorRecebido_TextChanged"
@@ -1505,40 +1509,40 @@
                             <Border Grid.Row="2" Background="White" CornerRadius="6" Padding="6" Margin="0,0,0,4">
                                 <StackPanel>
                                     <TextBlock Text="💰 VALORES RÁPIDOS" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="#1F2937" Margin="0,0,0,4"/>
+                                               Foreground="#172033" Margin="0,0,0,4"/>
                                     <UniformGrid Columns="2" Rows="2" Margin="0,0,0,2">
-                                        <Button Content="VALOR EXATO" Background="#4F46E5"
+                                        <Button Content="VALOR EXATO" Background="#3659D9"
                                                 Style="{StaticResource PrimaryButton}" Click="BtnValorExato_Click"/>
-                                        <Button Content="+50" Background="#10B981"
+                                        <Button Content="+50" Background="#16A36A"
                                                 Style="{StaticResource SuccessButton}" Click="BtnMais50_Click"/>
-                                        <Button Content="+100" Background="#10B981"
+                                        <Button Content="+100" Background="#16A36A"
                                                 Style="{StaticResource SuccessButton}" Click="BtnMais100_Click"/>
-                                        <Button Content="+500" Background="#10B981"
+                                        <Button Content="+500" Background="#16A36A"
                                                 Style="{StaticResource SuccessButton}" Click="BtnMais500_Click"/>
                                     </UniformGrid>
                                 </StackPanel>
                             </Border>
 
                             <!-- Total Final -->
-                            <Border Grid.Row="3" Background="#1E293B" CornerRadius="6" Padding="8" Margin="0,0,0,4">
+                            <Border Grid.Row="3" Background="#172033" CornerRadius="6" Padding="8" Margin="0,0,0,4">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="TOTAL FINAL" FontSize="11" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                                        <TextBlock Text="TOTAL FINAL" FontSize="11" Foreground="#687386" FontWeight="SemiBold"/>
                                         <TextBlock x:Name="txtTotalFinal" Text="0,00 Mtn"
                                                    FontSize="18" FontWeight="ExtraBold" Foreground="White" Margin="0,2,0,0"/>
                                         <TextBlock x:Name="txtTroco" Text="Troco: 0,00 Mtn"
-                                                   FontSize="10" FontWeight="Bold" Foreground="#93C5FD" Margin="0,4,0,0"/>
+                                                   FontSize="10" FontWeight="Bold" Foreground="#687386" Margin="0,4,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Finalizar -->
                             <Button Grid.Row="4" x:Name="btnFinalizarVenda" Content="✅ FINALIZAR VENDA"
-                                    Height="40" FontSize="13" Background="#10B981"
+                                    Height="40" FontSize="13" Background="#16A36A"
                                     Style="{StaticResource SuccessButton}" FontWeight="Bold" Padding="12,8"
                                     Click="BtnFinalizarVenda_Click"/>
                         </Grid>
@@ -1547,7 +1551,7 @@
             </Grid>
 
             <!-- RODAPÉ -->
-            <Border Grid.Row="2" Background="#1E293B" Padding="8">
+            <Border Grid.Row="2" Background="#FFFFFF" Padding="8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -1556,40 +1560,40 @@
 
                     <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F1" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F1" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Nova" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Nova" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F2" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F2" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Finalizar" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Finalizar" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F3" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F3" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Buscar" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Buscar" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F4" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F4" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Limpar" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Limpar" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F5" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F5" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Imprimir" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Imprimir" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="F8" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="F8" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Cliente" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Cliente" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
 
-                            <Border Background="#334155" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
-                                <TextBlock Text="ESC" Foreground="#60A5FA" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
+                            <Border Background="#F4F6FA" CornerRadius="4" Padding="4,2" Margin="0,0,4,0">
+                                <TextBlock Text="ESC" Foreground="#3659D9" FontWeight="Bold" FontSize="8" Margin="0,0,2,0"/>
                             </Border>
-                            <TextBlock Text="Cancelar" Foreground="#94A3B8" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Cancelar" Foreground="#687386" FontSize="8" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -1599,7 +1603,7 @@
                                 Height="26" FontSize="9" Click="BtnPrevisualizarRecibo_Click"
                                 Margin="0,0,4,0"/>
                         <Button x:Name="btnImprimirRodape" Content="🖨️ IMPRIMIR"
-                                Background="#10B981" Style="{StaticResource SuccessButton}"
+                                Background="#16A36A" Style="{StaticResource SuccessButton}"
                                 Height="26" FontSize="9" Click="BtnImprimirRecibo_Click"/>
                     </StackPanel>
                 </Grid>

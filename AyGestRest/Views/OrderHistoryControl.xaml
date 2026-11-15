@@ -231,10 +231,7 @@
                             CornerRadius="8" 
                             Padding="8"
                             Margin="0,0,8,0">
-                        <materialDesign:PackIcon Kind="History" 
-                                                Width="20" 
-                                                Height="20" 
-                                                Foreground="White"/>
+                        <TextBlock Text="↶" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel>
                         <TextBlock Text="HISTÓRICO DE VENDAS" 

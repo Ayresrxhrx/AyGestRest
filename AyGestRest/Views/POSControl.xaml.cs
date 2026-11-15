@@ -1,4 +1,5 @@
 ﻿using AyGestRest.Data;
+using AyGestRest.Services;
 using AyGestRest.Helpers;
 using AyGestRest.Models;
 using Microsoft.EntityFrameworkCore;
@@ -1293,7 +1294,8 @@ namespace AyGestRest.Views
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        SalvarOrdemAtual();
+                        if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                            return;
                     }
                     else
                     {
@@ -1451,7 +1453,8 @@ namespace AyGestRest.Views
 
                 if (_ordemAtual != null && Carrinho.Any())
                 {
-                    SalvarOrdemAtual();
+                    if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                        return;
                 }
 
                 _ordemAtual = ordemExistente;
@@ -1459,14 +1462,15 @@ namespace AyGestRest.Views
                 _horaAberturaMesa = ordemExistente.OpenDate;
 
                 Carrinho.Clear();
-                foreach (var item in ordemExistente.Items)
+                foreach (var grupo in ordemExistente.Items.GroupBy(i => i.ProductId))
                 {
+                    var item = grupo.OrderByDescending(i => i.CreatedAt).First();
                     Carrinho.Add(new CartItem
                     {
                         ProductId = item.ProductId,
                         ProductName = item.Name,
                         UnitPrice = item.UnitPrice,
-                        Quantity = item.Quantity
+                        Quantity = grupo.Sum(i => i.Quantity)
                     });
                 }
 
@@ -1493,32 +1497,184 @@ namespace AyGestRest.Views
             }
         }
 
-        private void SalvarOrdemAtual()
+        private bool SalvarOrdemAtual(bool mostrarConfirmacao = false)
         {
-            if (_ordemAtual == null || _db == null) return;
+            if (_ordemAtual == null || _db == null)
+            {
+                if (mostrarConfirmacao)
+                    MessageBox.Show("Seleccione ou abra um pedido antes de guardar.", "Pedido não seleccionado",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
 
             try
             {
-                var itensAntigos = _db.OrderItems.Where(oi => oi.OrderId == _ordemAtual.Id);
-                _db.OrderItems.RemoveRange(itensAntigos);
+                if (!Carrinho.Any())
+                    throw new InvalidOperationException("Adicione pelo menos um produto antes de guardar o pedido.");
 
-                foreach (var item in Carrinho)
+                // Guardar mantém o pedido aberto e reserva imediatamente o stock.
+                // Não paga, não factura e não liberta a mesa.
+                using var transaction = _db.Database.BeginTransaction();
+
+                var itensAntigos = _db.OrderItems
+                    .Where(oi => oi.OrderId == _ordemAtual.Id)
+                    .ToList();
+                var itensCarrinho = Carrinho.ToList();
+                var produtosNoCarrinho = itensCarrinho.Select(i => i.ProductId).ToHashSet();
+
+                // Mantém intactas as quantidades já enviadas para a cozinha.
+                // Se o cliente pedir mais unidades do mesmo produto, cria uma nova
+                // linha Pendente apenas para a quantidade adicional.
+                foreach (var grupoAntigo in itensAntigos.GroupBy(i => i.ProductId))
                 {
-                    _db.OrderItems.Add(new OrderItem
+                    var linhas = grupoAntigo.ToList();
+                    if (!produtosNoCarrinho.Contains(grupoAntigo.Key))
                     {
-                        OrderId = _ordemAtual.Id,
-                        ProductId = item.ProductId,
-                        Name = item.ProductName,
-                        UnitPrice = item.UnitPrice,
-                        Quantity = item.Quantity
-                    });
+                        if (linhas.Any(i => i.KitchenStatus != KitchenStatus.Pendente))
+                            throw new InvalidOperationException(
+                                $"O produto '{linhas[0].Name}' já foi enviado para a cozinha e não pode ser removido do pedido.");
+
+                        _db.OrderItems.RemoveRange(linhas);
+                    }
                 }
 
+                foreach (var item in itensCarrinho)
+                {
+                    if (item.ProductId <= 0 || item.Quantity <= 0)
+                        throw new InvalidOperationException("O pedido contém um produto ou quantidade inválida.");
+
+                    var linhasAntigas = itensAntigos.Where(i => i.ProductId == item.ProductId).ToList();
+                    var linhasEnviadas = linhasAntigas.Where(i => i.KitchenStatus != KitchenStatus.Pendente).ToList();
+                    var linhasPendentes = linhasAntigas.Where(i => i.KitchenStatus == KitchenStatus.Pendente).ToList();
+                    var quantidadeEnviada = linhasEnviadas.Sum(i => i.Quantity);
+
+                    if (item.Quantity < quantidadeEnviada)
+                        throw new InvalidOperationException(
+                            $"A quantidade de '{item.ProductName}' não pode ficar abaixo das {quantidadeEnviada} unidades já enviadas para a cozinha.");
+
+                    var quantidadePendente = item.Quantity - quantidadeEnviada;
+                    if (linhasPendentes.Count > 0)
+                    {
+                        var linhaPendente = linhasPendentes[0];
+                        if (quantidadePendente <= 0)
+                        {
+                            _db.OrderItems.RemoveRange(linhasPendentes);
+                        }
+                        else
+                        {
+                            linhaPendente.Name = item.ProductName;
+                            linhaPendente.UnitPrice = item.UnitPrice;
+                            linhaPendente.PriceAtMoment = item.UnitPrice;
+                            linhaPendente.Quantity = quantidadePendente;
+                            linhaPendente.Total = decimal.Round(item.UnitPrice * quantidadePendente, 2, MidpointRounding.AwayFromZero);
+                            if (linhasPendentes.Count > 1)
+                                _db.OrderItems.RemoveRange(linhasPendentes.Skip(1));
+                        }
+                    }
+                    else if (quantidadePendente > 0)
+                    {
+                        _db.OrderItems.Add(new OrderItem
+                        {
+                            OrderId = _ordemAtual.Id,
+                            ProductId = item.ProductId,
+                            Name = item.ProductName,
+                            UnitPrice = item.UnitPrice,
+                            PriceAtMoment = item.UnitPrice,
+                            Quantity = quantidadePendente,
+                            Total = decimal.Round(item.UnitPrice * quantidadePendente, 2, MidpointRounding.AwayFromZero),
+                            CreatedAt = DateTime.Now,
+                            Estado = "Pendente",
+                            KitchenStatus = KitchenStatus.Pendente
+                        });
+                    }
+                }
+
+                // Usa o total efectivo do POS, incluindo o desconto configurado,
+                // para que o valor guardado corresponda ao valor apresentado no pagamento.
+                var subtotal = CalcularTotalAtualDaVenda();
+                _ordemAtual.Total = subtotal;
+                _ordemAtual.TotalAmount = subtotal;
+                _ordemAtual.IsPaid = false;
+                _ordemAtual.IsClosed = false;
+                _ordemAtual.Fecha = false;
+                _ordemAtual.CloseDate = null;
+                _ordemAtual.Status = OrderStatus.Aberto;
+
+                // Reserva stock e persiste o pedido numa única transacção.
+                // Se a reserva falhar, o pedido e os movimentos são revertidos em conjunto.
+                var reservationService = new OrderStockReservationService(_db);
+                reservationService.ReserveForOrderInCurrentTransaction(_ordemAtual.Id);
                 _db.SaveChanges();
+
+                transaction.Commit();
+
+                _comandasAbertas.RemoveAll(o => o.Id == _ordemAtual.Id);
+                _comandasAbertas.Add(_ordemAtual);
+                AtualizarTotal();
+                AtualizarContadorComandas();
+
+                if (mostrarConfirmacao)
+                    MostrarMensagemStatus($"Pedido #{_ordemAtual.Id:D6} guardado. Stock reservado; continua aberto para adicionar produtos.",
+                        Brushes.ForestGreen, 5);
+
+                return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Erro ao salvar ordem: {ex.Message}");
+                var failedOrderId = _ordemAtual?.Id;
+                var failedTableId = _mesaAtual?.Id;
+                var failedTableSnapshot = _mesaAtual;
+
+                // A transacção pode ter sido revertida depois de o EF ter preparado
+                // alterações no ChangeTracker. Recarrega os registos persistidos,
+                // mantendo o carrinho visível para o operador corrigir as quantidades.
+                try
+                {
+                    _db.ChangeTracker.Clear();
+                    if (failedOrderId.HasValue)
+                        _ordemAtual = _db.Orders
+                            .Include(o => o.Items)
+                            .FirstOrDefault(o => o.Id == failedOrderId.Value);
+                    if (failedTableId.HasValue && failedTableId.Value > 0)
+                        _mesaAtual = _db.Tables.FirstOrDefault(t => t.Id == failedTableId.Value);
+                    else
+                        _mesaAtual = failedTableSnapshot;
+
+                    if (failedOrderId.HasValue)
+                    {
+                        _comandasAbertas.RemoveAll(o => o.Id == failedOrderId.Value);
+                        if (_ordemAtual != null)
+                            _comandasAbertas.Add(_ordemAtual);
+                    }
+                }
+                catch (Exception reloadError)
+                {
+                    Debug.WriteLine($"Falha ao recarregar pedido após rollback: {reloadError}");
+                }
+
+                Debug.WriteLine($"Erro ao guardar pedido #{failedOrderId}: {ex}");
+                if (mostrarConfirmacao)
+                    MessageBox.Show($"Não foi possível guardar o pedido. Nenhuma alteração foi confirmada.\n\n{ex.Message}",
+                        "Erro ao guardar pedido", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+        private void BtnGuardarPedido_Click(object sender, RoutedEventArgs e)
+        {
+            if (_ordemAtual == null)
+            {
+                MessageBox.Show("Abra uma mesa ou pedido antes de guardar.", "Pedido não seleccionado",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (SalvarOrdemAtual(mostrarConfirmacao: true))
+            {
+                // Mantém o pedido, a mesa e o carrinho activos. O operador pode
+                // continuar a adicionar produtos ou voltar ao pedido mais tarde.
+                _modoSelecaoMesa = false;
+                AtualizarTelaCliente();
             }
         }
 
@@ -1534,45 +1690,81 @@ namespace AyGestRest.Views
                 return;
             }
 
-            var itensCozinha = new List<CartItem>();
+            // Guarda primeiro sem fechar a venda. Assim, a cozinha recebe exactamente
+            // os itens persistidos e o pedido continua aberto para receber mais produtos.
+            if (!SalvarOrdemAtual(mostrarConfirmacao: true))
+                return;
+
+            List<OrderItem> linhasPendentes;
             using (var db = new AyGestRestContext())
             {
-                foreach (var item in Carrinho)
-                {
-                    var prod = await db.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == item.ProductId);
-                    if (prod?.PrintToKitchen == true)
-                        itensCozinha.Add(item);
-                }
+                linhasPendentes = await db.OrderItems
+                    .Include(i => i.Product)
+                    .Where(i => i.OrderId == _ordemAtual.Id &&
+                                i.KitchenStatus == KitchenStatus.Pendente &&
+                                i.Product != null && i.Product.PrintToKitchen)
+                    .OrderBy(i => i.CreatedAt)
+                    .ToListAsync();
             }
 
-            if (!itensCozinha.Any())
+            if (linhasPendentes.Count == 0)
             {
-                MessageBox.Show("Nenhum item marcado para cozinha.", "Informação", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Não existem novos itens pendentes para enviar à cozinha.",
+                    "Cozinha actualizada", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            string textoCozinha = GerarTextoReciboCozinhaCompleto(itensCozinha);
+            var itensCozinha = linhasPendentes.Select(i => new CartItem
+            {
+                ProductId = i.ProductId,
+                ProductName = i.Name,
+                UnitPrice = i.UnitPrice,
+                Quantity = i.Quantity
+            }).ToList();
 
+            string textoCozinha = GerarTextoReciboCozinhaCompleto(itensCozinha);
             string impressora = _config?.KitchenPrinterName;
             if (string.IsNullOrWhiteSpace(impressora) || impressora == "(Nenhuma)")
                 impressora = _config?.PrinterName;
 
             if (string.IsNullOrWhiteSpace(impressora))
             {
-                MessageBox.Show("Nenhuma impressora configurada para cozinha.", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Nenhuma impressora configurada para cozinha.", "Erro",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             bool sucesso = await ImprimirCozinhaAsync(textoCozinha, impressora);
-
-            if (sucesso)
+            if (!sucesso)
             {
-                MostrarMensagemStatus("Pedido enviado para cozinha!", Brushes.Green, 4);
-            }
-            else
-            {
-                MessageBox.Show($"Falha ao enviar para cozinha.\n\nVerifique:\n• Impressora ligada?\n• Papel colocado?\n• Nome correto: {impressora}",
+                MessageBox.Show($"Falha ao enviar para cozinha.\n\nVerifique:\n• Impressora ligada?\n• Papel colocado?\n• Nome correcto: {impressora}",
                     "Erro de Impressão", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Só marca como enviado depois de a impressora confirmar a operação.
+            try
+            {
+                var ids = linhasPendentes.Select(i => i.Id).ToList();
+                var enviados = await _db!.OrderItems
+                    .Where(i => ids.Contains(i.Id) && i.KitchenStatus == KitchenStatus.Pendente)
+                    .ToListAsync();
+
+                foreach (var item in enviados)
+                {
+                    item.KitchenStatus = KitchenStatus.EmPreparacao;
+                    item.Estado = "Em preparação";
+                }
+
+                await _db.SaveChangesAsync();
+                MostrarMensagemStatus($"{enviados.Sum(i => i.Quantity)} unidade(s) nova(s) enviada(s) para a cozinha.",
+                    Brushes.ForestGreen, 5);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"A impressão foi concluída, mas não foi possível actualizar o estado da cozinha: {ex}");
+                MessageBox.Show("O pedido foi impresso, mas o estado dos itens não foi actualizado na base de dados. Verifique a cozinha antes de voltar a imprimir para evitar duplicações.",
+                    "Atenção: estado não actualizado", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -1909,17 +2101,34 @@ namespace AyGestRest.Views
 
             try
             {
-                if (_ordemAtual != null && _db != null)
+                if (_db == null)
+                    throw new InvalidOperationException("A ligação à base de dados não está disponível.");
+
+                using (var transaction = await _db.Database.BeginTransactionAsync())
                 {
-                    _db.Orders.Remove(_ordemAtual);
+                    if (_ordemAtual != null)
+                    {
+                        bool enviadoParaCozinha = await _db.OrderItems.AnyAsync(i =>
+                            i.OrderId == _ordemAtual.Id && i.KitchenStatus != KitchenStatus.Pendente);
+                        if (enviadoParaCozinha)
+                            throw new InvalidOperationException(
+                                "Este pedido já foi enviado para a cozinha. Não pode ser eliminado pelo POS, para evitar devolver ao stock produtos que já entraram em preparação. Solicite a intervenção de um responsável.");
+
+                        // Devolve ao stock tudo o que estava reservado antes de eliminar o pedido.
+                        var reservationService = new OrderStockReservationService(_db);
+                        reservationService.ReleaseForOrderInCurrentTransaction(_ordemAtual.Id);
+                        _db.Orders.Remove(_ordemAtual);
+                    }
+
+                    if (_mesaAtual != null && _mesaAtual.Id > 0)
+                        _mesaAtual.Status = TableStatus.Livre;
+
+                    await _db.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
 
-                if (_mesaAtual != null && _mesaAtual.Id > 0 && _db != null)
-                {
-                    _mesaAtual.Status = TableStatus.Livre;
-                    await _db.SaveChangesAsync();
+                if (_mesaAtual != null && _mesaAtual.Id > 0)
                     AppEvents.RaiseSpecificTableStatusChanged(_mesaAtual.Id);
-                }
 
                 AppEvents.RaiseCartUpdated(new ObservableCollection<CartItem>());
                 AppEvents.RaiseOrderInfoUpdated("000000", "Nenhuma");
@@ -1937,10 +2146,6 @@ namespace AyGestRest.Views
 
                 AtualizarTelaCliente();
 
-                if (_db != null)
-                {
-                    await _db.SaveChangesAsync();
-                }
                 await CarregarMesasAsync();
                 await CarregarComandasAbertasAsync();
 

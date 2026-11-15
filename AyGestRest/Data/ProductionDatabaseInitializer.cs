@@ -30,7 +30,7 @@ namespace AyGestRest.Data
             await using var db = await _factory.CreateDbContextAsync(cancellationToken);
             await ConfigureSqliteAsync(db, cancellationToken);
 
-            var migrations = (await db.Database.GetMigrationsAsync(cancellationToken)).ToList();
+            var migrations = db.Database.GetMigrations().ToList();
 
             if (migrations.Count > 0)
             {

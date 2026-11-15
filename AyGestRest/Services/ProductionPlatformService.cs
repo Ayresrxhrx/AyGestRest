@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using AyGestRest.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
@@ -144,13 +148,13 @@ namespace AyGestRest.Services
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
             await using (var check = connection.CreateCommand())
             {
-                check.Transaction = transaction;
+                check.Transaction = (SqliteTransaction)transaction;
                 check.CommandText = "SELECT Id FROM AyGestCashRegisters WHERE TerminalId=$terminal AND Status=1 LIMIT 1;";
                 Add(check, "$terminal", terminalId);
                 if (await check.ExecuteScalarAsync(cancellationToken) is not null) throw new InvalidOperationException("Já existe um caixa aberto neste terminal.");
             }
             await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = "INSERT INTO AyGestCashRegisters (TerminalId,OperatorId,OpenedAt,OpeningAmount,ExpectedAmount,Status,Notes) VALUES ($terminal,$operator,$opened,$amount,$amount,1,$notes); SELECT last_insert_rowid();";
             Add(command, "$terminal", terminalId); Add(command, "$operator", operatorId); Add(command, "$opened", DateTime.Now.ToString("O")); Add(command, "$amount", openingAmount); Add(command, "$notes", notes?.Trim() ?? string.Empty);
             var id = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
@@ -175,7 +179,7 @@ namespace AyGestRest.Services
             decimal expected;
             await using (var check = connection.CreateCommand())
             {
-                check.Transaction = transaction;
+                check.Transaction = (SqliteTransaction)transaction;
                 check.CommandText = "SELECT Status, ExpectedAmount FROM AyGestCashRegisters WHERE Id=$id LIMIT 1;";
                 Add(check, "$id", cashRegisterId);
                 await using var reader = await check.ExecuteReaderAsync(cancellationToken);
@@ -188,14 +192,14 @@ namespace AyGestRest.Services
                 throw new InvalidOperationException($"Movimento recusado: o caixa dispõe de {expected.ToString("N2", CultureInfo.InvariantCulture)} MT e a saída solicitada é de {amount.ToString("N2", CultureInfo.InvariantCulture)} MT.");
 
             await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = "INSERT INTO AyGestCashMovements (CashRegisterId,Type,Amount,PaymentMethod,Reference,Notes,OperatorId,CreatedAt) VALUES ($register,$type,$amount,$method,$reference,$notes,$operator,$created);";
             Add(command, "$register", cashRegisterId); Add(command, "$type", normalizedType); Add(command, "$amount", amount); Add(command, "$method", paymentMethod?.Trim() ?? "Dinheiro"); Add(command, "$reference", reference?.Trim() ?? string.Empty); Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$operator", operatorId); Add(command, "$created", DateTime.Now.ToString("O"));
             await command.ExecuteNonQueryAsync(cancellationToken);
 
             var sign = isExit ? -1 : 1;
             await using var update = connection.CreateCommand();
-            update.Transaction = transaction;
+            update.Transaction = (SqliteTransaction)transaction;
             update.CommandText = isExit
                 ? "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount-$amount WHERE Id=$id AND Status=1 AND ExpectedAmount >= $amount;"
                 : "UPDATE AyGestCashRegisters SET ExpectedAmount=ExpectedAmount+$amount WHERE Id=$id AND Status=1;";
@@ -212,7 +216,7 @@ namespace AyGestRest.Services
             await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
             var expected = await GetExpectedAmountAsync(connection, transaction, cashRegisterId, cancellationToken);
             await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = "UPDATE AyGestCashRegisters SET ClosedAt=$closed,CountedAmount=$counted,Difference=$difference,Status=0,Notes=CASE WHEN $notes='' THEN Notes ELSE $notes END WHERE Id=$id AND Status=1;";
             Add(command, "$closed", DateTime.Now.ToString("O")); Add(command, "$counted", countedAmount); Add(command, "$difference", countedAmount - expected); Add(command, "$notes", notes?.Trim() ?? string.Empty); Add(command, "$id", cashRegisterId);
             if (await command.ExecuteNonQueryAsync(cancellationToken) != 1) throw new InvalidOperationException("Caixa não encontrado ou já fechado.");
@@ -285,7 +289,7 @@ namespace AyGestRest.Services
         private static async Task<decimal> GetExpectedAmountAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, int id, CancellationToken cancellationToken)
         {
             await using var command = connection.CreateCommand();
-            command.Transaction = transaction;
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = "SELECT ExpectedAmount FROM AyGestCashRegisters WHERE Id=$id AND Status=1;";
             Add(command, "$id", id);
             var value = await command.ExecuteScalarAsync(cancellationToken);

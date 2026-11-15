@@ -25,7 +25,7 @@ namespace AyGestRest.Views
 
     public partial class POSControl
     {
-        private void RegisterProductionHandlersDirect()
+        internal void RegisterProductionHandlersDirect()
         {
             if (_productionHandlersRegistered) return;
             _productionHandlersRegistered = true;

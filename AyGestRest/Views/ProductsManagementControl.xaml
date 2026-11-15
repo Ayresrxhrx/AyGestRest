@@ -273,7 +273,7 @@
                                Foreground="#64748B" FontSize="11"/>
                 </StackPanel>
                 <Button Grid.Column="1" Style="{StaticResource CloseButtonStyle}" Click="CloseProductPopup_Click">
-                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18"/>
+                    <TextBlock Text="×" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Button>
             </Grid>
         </Border>
@@ -294,7 +294,7 @@
                             <TextBlock Text="Nome do Produto" Style="{StaticResource RequiredFieldLabelStyle}"/>
                             <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                         </StackPanel>
-                        <TextBox x:Name="TxtName" materialDesign:HintAssist.Hint="Ex: Pizza Margherita"
+                        <TextBox x:Name="TxtName" ToolTip="Ex: Pizza Margherita"
                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                     </StackPanel>
                     
@@ -306,7 +306,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="70"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" x:Name="TxtCode" materialDesign:HintAssist.Hint="Ex: PIZZA-MARG"
+                            <TextBox Grid.Column="0" x:Name="TxtCode" ToolTip="Ex: PIZZA-MARG"
                                      Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                             <Button Grid.Column="1" Content="Gerar" Style="{StaticResource SecondaryButtonStyle}"
                                     Margin="6,0,0,0" Padding="4" Click="BtnGenerateCode_Click" Height="32"/>
@@ -326,7 +326,7 @@
                                 <TextBlock Text="Categoria" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                 <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                             </StackPanel>
-                            <ComboBox x:Name="CmbCategory" materialDesign:HintAssist.Hint="Selecionar categoria"
+                            <ComboBox x:Name="CmbCategory" ToolTip="Selecionar categoria"
                                       DisplayMemberPath="Nome" SelectedValuePath="Id" Height="32"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
@@ -334,7 +334,7 @@
                                 <TextBlock Text="Preço de Venda" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                 <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                             </StackPanel>
-                            <TextBox x:Name="TxtSalePrice" materialDesign:HintAssist.Hint="0,00 MTn"
+                            <TextBox x:Name="TxtSalePrice" ToolTip="0,00 MTn"
                                      Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                         </StackPanel>
                     </Grid>
@@ -342,7 +342,7 @@
                     <!-- Stock -->
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="Stock Atual" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                        <TextBox x:Name="TxtStock" materialDesign:HintAssist.Hint="Quantidade em stock"
+                        <TextBox x:Name="TxtStock" ToolTip="Quantidade em stock"
                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                     </StackPanel>
                     
@@ -360,7 +360,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Código de Barras" Style="{StaticResource RequiredFieldLabelStyle}" Margin="0,0,0,4"/>
-                                        <TextBox x:Name="TxtBarcode" materialDesign:HintAssist.Hint="Ex: 123456789012"
+                                        <TextBox x:Name="TxtBarcode" ToolTip="Ex: 123456789012"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                         <TextBlock Text="Use um scanner para ler o código" FontSize="10" Foreground="#94A3B8" Margin="0,2,0,0"/>
                                     </StackPanel>
@@ -388,7 +388,7 @@
                                        FontSize="11" Foreground="#64748B" Margin="0,0,0,6"/>
                             <TextBox x:Name="TxtDescription" Height="50" AcceptsReturn="True"
                                      TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                     materialDesign:HintAssist.Hint="Descrição detalhada do produto..." FontSize="12"/>
+                                     ToolTip="Descrição detalhada do produto..." FontSize="12"/>
                         </StackPanel>
                     </Expander>
                 </Border>
@@ -479,13 +479,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <ComboBox x:Name="CmbAddIngredient" 
-                                          materialDesign:HintAssist.Hint="Selecione um ingrediente"
+                                          ToolTip="Selecione um ingrediente"
                                           DisplayMemberPath="Name"
                                           SelectedValuePath="Id"
                                           Height="28" FontSize="11"/>
                                 <TextBox x:Name="TxtQuantityAdd"
                                          Grid.Column="1"
-                                         materialDesign:HintAssist.Hint="Quantidade"
+                                         ToolTip="Quantidade"
                                          Height="28" FontSize="11"
                                          Margin="4,0,0,0"
                                          TextAlignment="Right"/>
@@ -675,7 +675,7 @@
                                             <TextBlock Text="Nome do Ingrediente" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                             <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                         </StackPanel>
-                                        <TextBox x:Name="TxtIngredientName" materialDesign:HintAssist.Hint="Ex: Farinha, Queijo, Tomate"
+                                        <TextBox x:Name="TxtIngredientName" ToolTip="Ex: Farinha, Queijo, Tomate"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
 
@@ -685,7 +685,7 @@
                                             <TextBlock Text="Custo (MTn)" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                             <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                         </StackPanel>
-                                        <TextBox x:Name="TxtIngredientCost" materialDesign:HintAssist.Hint="0,00"
+                                        <TextBox x:Name="TxtIngredientCost" ToolTip="0,00"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
 
@@ -695,14 +695,14 @@
                                             <TextBlock Text="Unidade de Medida" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                             <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                         </StackPanel>
-                                        <TextBox x:Name="TxtIngredientUnit" materialDesign:HintAssist.Hint="Ex: kg, un, lt, ml"
+                                        <TextBox x:Name="TxtIngredientUnit" ToolTip="Ex: kg, un, lt, ml"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
 
                                     <!-- Stock -->
                                     <StackPanel Margin="0,0,0,12">
                                         <TextBlock Text="Stock Inicial" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                        <TextBox x:Name="TxtIngredientStock" materialDesign:HintAssist.Hint="0,00"
+                                        <TextBox x:Name="TxtIngredientStock" ToolTip="0,00"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -778,7 +778,7 @@
                                     <TextBlock Text="Produto" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                     <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                 </StackPanel>
-                                <ComboBox x:Name="CmbMovementProduct" materialDesign:HintAssist.Hint="Selecionar produto"
+                                <ComboBox x:Name="CmbMovementProduct" ToolTip="Selecionar produto"
                                           DisplayMemberPath="Name" SelectedValuePath="Id" Height="32"/>
                             </StackPanel>
 
@@ -788,14 +788,14 @@
                                     <TextBlock Text="Quantidade" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                     <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                 </StackPanel>
-                                <TextBox x:Name="TxtMovementQuantity" materialDesign:HintAssist.Hint="0"
+                                <TextBox x:Name="TxtMovementQuantity" ToolTip="0"
                                          Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                             </StackPanel>
 
                             <!-- Motivo -->
                             <StackPanel Margin="0,0,0,12">
                                 <TextBlock Text="Motivo" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                <ComboBox x:Name="CmbMovementReason" materialDesign:HintAssist.Hint="Selecionar motivo"
+                                <ComboBox x:Name="CmbMovementReason" ToolTip="Selecionar motivo"
                                           SelectedIndex="0" Height="32">
                                     <ComboBoxItem Content="Compra"/>
                                     <ComboBoxItem Content="Ajuste de inventário"/>
@@ -809,7 +809,7 @@
                             <!-- Observações -->
                             <StackPanel Margin="0,0,0,8">
                                 <TextBlock Text="Observações" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                <TextBox x:Name="TxtMovementNotes" materialDesign:HintAssist.Hint="Detalhes do movimento..."
+                                <TextBox x:Name="TxtMovementNotes" ToolTip="Detalhes do movimento..."
                                          Height="60" AcceptsReturn="True" TextWrapping="Wrap" 
                                          VerticalScrollBarVisibility="Auto" FontSize="12"/>
                             </StackPanel>
@@ -898,14 +898,14 @@
                                         <TextBlock Text="Nome do Fornecedor" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                         <TextBlock Style="{StaticResource RequiredIndicatorStyle}"/>
                                     </StackPanel>
-                                    <TextBox x:Name="TxtSupplierName" materialDesign:HintAssist.Hint="Ex: Distribuidora ABC" 
+                                    <TextBox x:Name="TxtSupplierName" ToolTip="Ex: Distribuidora ABC" 
                                              Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                 </StackPanel>
 
                                 <!-- NIF/Identificação -->
                                 <StackPanel Margin="0,0,0,8">
                                     <TextBlock Text="NIF/Identificação" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                    <TextBox x:Name="TxtSupplierNIF" materialDesign:HintAssist.Hint="Ex: 123456789"
+                                    <TextBox x:Name="TxtSupplierNIF" ToolTip="Ex: 123456789"
                                              Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                 </StackPanel>
 
@@ -919,13 +919,13 @@
 
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Telefone" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                        <TextBox x:Name="TxtSupplierPhone" materialDesign:HintAssist.Hint="Ex: 84 123 4567"
+                                        <TextBox x:Name="TxtSupplierPhone" ToolTip="Ex: 84 123 4567"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Email" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                        <TextBox x:Name="TxtSupplierEmail" materialDesign:HintAssist.Hint="exemplo@fornecedor.com"
+                                        <TextBox x:Name="TxtSupplierEmail" ToolTip="exemplo@fornecedor.com"
                                                  Style="{StaticResource ValidatedTextBoxStyle}" Height="32"/>
                                     </StackPanel>
                                 </Grid>
@@ -937,7 +937,7 @@
                                     <StackPanel>
                                         <StackPanel Margin="0,0,0,8">
                                             <TextBlock Text="Endereço" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                            <TextBox x:Name="TxtSupplierAddress" materialDesign:HintAssist.Hint="Rua, número, bairro"
+                                            <TextBox x:Name="TxtSupplierAddress" ToolTip="Rua, número, bairro"
                                                      Height="32" FontSize="12"/>
                                         </StackPanel>
 
@@ -950,13 +950,13 @@
 
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Text="Cidade" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                                <TextBox x:Name="TxtSupplierCity" materialDesign:HintAssist.Hint="Cidade"
+                                                <TextBox x:Name="TxtSupplierCity" ToolTip="Cidade"
                                                          Height="32" FontSize="12"/>
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="Província" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                                <TextBox x:Name="TxtSupplierProvince" materialDesign:HintAssist.Hint="Província"
+                                                <TextBox x:Name="TxtSupplierProvince" ToolTip="Província"
                                                          Height="32" FontSize="12"/>
                                             </StackPanel>
                                         </Grid>
@@ -970,13 +970,13 @@
                                     <StackPanel>
                                         <StackPanel Margin="0,0,0,8">
                                             <TextBlock Text="Pessoa de Contato" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                            <TextBox x:Name="TxtSupplierContactPerson" materialDesign:HintAssist.Hint="Nome da pessoa de contato"
+                                            <TextBox x:Name="TxtSupplierContactPerson" ToolTip="Nome da pessoa de contato"
                                                      Height="32" FontSize="12"/>
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,0,8">
                                             <TextBlock Text="Condições de Pagamento" Style="{StaticResource RequiredFieldLabelStyle}"/>
-                                            <TextBox x:Name="TxtSupplierPaymentTerms" materialDesign:HintAssist.Hint="Ex: 30 dias, à vista"
+                                            <TextBox x:Name="TxtSupplierPaymentTerms" ToolTip="Ex: 30 dias, à vista"
                                                      Height="32" FontSize="12"/>
                                         </StackPanel>
 
@@ -984,7 +984,7 @@
                                             <TextBlock Text="Observações" Style="{StaticResource RequiredFieldLabelStyle}"/>
                                             <TextBox x:Name="TxtSupplierNotes" Height="60" AcceptsReturn="True" 
                                                      TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                                     materialDesign:HintAssist.Hint="Observações sobre o fornecedor..." FontSize="12"/>
+                                                     ToolTip="Observações sobre o fornecedor..." FontSize="12"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Expander>
@@ -1098,7 +1098,7 @@
                                        Margin="2,0,0,0"/>
                                     </StackPanel>
                                     <ComboBox x:Name="CmbPurchaseSupplier" 
-                                  materialDesign:HintAssist.Hint="Selecione um fornecedor"
+                                  ToolTip="Selecione um fornecedor"
                                   DisplayMemberPath="Name" 
                                   SelectedValuePath="Id" 
                                   Height="36"
@@ -1117,7 +1117,7 @@
                                    Foreground="#2C3E50" 
                                    FontWeight="Medium"/>
                                     <ComboBox x:Name="CmbPurchaseType" 
-                                  materialDesign:HintAssist.Hint="Selecione o tipo"
+                                  ToolTip="Selecione o tipo"
                                   SelectedIndex="0" 
                                   Height="36"
                                   FontSize="12"
@@ -1139,7 +1139,7 @@
                                    Foreground="#2C3E50" 
                                    FontWeight="Medium"/>
                                     <TextBox x:Name="TxtPurchaseNotes" 
-                                 materialDesign:HintAssist.Hint="Detalhes adicionais da compra..."
+                                 ToolTip="Detalhes adicionais da compra..."
                                  Height="50" 
                                  AcceptsReturn="True" 
                                  TextWrapping="Wrap" 
@@ -1200,7 +1200,7 @@
                                                FontWeight="Medium"
                                                Margin="0,0,0,4"/>
                                                 <ComboBox x:Name="CmbPurchaseProduct" 
-                                              materialDesign:HintAssist.Hint="Selecione um produto"
+                                              ToolTip="Selecione um produto"
                                               DisplayMemberPath="Name" 
                                               SelectedValuePath="Id" 
                                               Height="32" 
@@ -1654,12 +1654,12 @@
                                         <TextBlock Text="Filtros Avançados" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6" FontSize="13"/>
                                         <WrapPanel>
                                             <ComboBox x:Name="CmbFilterCategory" Width="160" 
-                                          materialDesign:HintAssist.Hint="Categoria"
+                                          ToolTip="Categoria"
                                           DisplayMemberPath="Nome" SelectedValuePath="Id" 
                                           SelectionChanged="CmbFilterCategory_SelectionChanged" Margin="0,0,6,6"/>
 
                                             <ComboBox x:Name="CmbFilterStatus" Width="120" 
-                                          materialDesign:HintAssist.Hint="Status" 
+                                          ToolTip="Status" 
                                           SelectedIndex="0" Margin="0,0,6,6">
                                                 <ComboBoxItem Content="Todos"/>
                                                 <ComboBoxItem Content="Ativos"/>
@@ -1667,7 +1667,7 @@
                                             </ComboBox>
 
                                             <ComboBox x:Name="CmbFilterStock" Width="140" 
-                                          materialDesign:HintAssist.Hint="Stock" 
+                                          ToolTip="Stock" 
                                           SelectedIndex="0">
                                                 <ComboBoxItem Content="Todos"/>
                                                 <ComboBoxItem Content="Sem stock"/>
@@ -2055,7 +2055,7 @@
                                                 <DatePicker x:Name="DpHistoryFrom" 
                                                 Width="140" 
                                                 SelectedDate="{x:Static sys:DateTime.Today}"
-                                                materialDesign:HintAssist.Hint="dd/MM/yyyy"
+                                                ToolTip="dd/MM/yyyy"
                                                 FontSize="12"/>
                                             </StackPanel>
 
@@ -2069,7 +2069,7 @@
                                                 <DatePicker x:Name="DpHistoryTo" 
                                                 Width="140" 
                                                 SelectedDate="{x:Static sys:DateTime.Today}"
-                                                materialDesign:HintAssist.Hint="dd/MM/yyyy"
+                                                ToolTip="dd/MM/yyyy"
                                                 FontSize="12"/>
                                             </StackPanel>
                                         </WrapPanel>
@@ -2082,7 +2082,7 @@
                                                Style="{StaticResource RequiredFieldLabelStyle}"/>
                                                 <ComboBox x:Name="CmbHistoryProduct" 
                                               Width="200"
-                                              materialDesign:HintAssist.Hint="Todos os produtos"
+                                              ToolTip="Todos os produtos"
                                               DisplayMemberPath="Name"
                                               SelectedValuePath="Id"
                                               FontSize="12"
@@ -2095,7 +2095,7 @@
                                                Style="{StaticResource RequiredFieldLabelStyle}"/>
                                                 <ComboBox x:Name="CmbHistoryCategory" 
                                               Width="160"
-                                              materialDesign:HintAssist.Hint="Todas categorias"
+                                              ToolTip="Todas categorias"
                                               DisplayMemberPath="Nome"
                                               SelectedValuePath="Id"
                                               FontSize="12"
@@ -2764,7 +2764,7 @@
                                         <TextBlock Text="Filtrar Movimentos" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6" FontSize="13"/>
                                         <WrapPanel>
                                             <ComboBox x:Name="CmbInventoryFilterType" Width="120" 
-                                                      materialDesign:HintAssist.Hint="Tipo" 
+                                                      ToolTip="Tipo" 
                                                       SelectedIndex="0" Margin="0,0,6,6">
                                                 <ComboBoxItem Content="Todos"/>
                                                 <ComboBoxItem Content="Entradas"/>
@@ -2772,14 +2772,14 @@
                                             </ComboBox>
 
                                             <ComboBox x:Name="CmbInventoryFilterProduct" Width="160" 
-                                                      materialDesign:HintAssist.Hint="Produto"
+                                                      ToolTip="Produto"
                                                       DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,6,6"/>
 
                                             <DatePicker x:Name="DpInventoryFrom" Width="120" 
-                                                         materialDesign:HintAssist.Hint="De" Margin="0,0,6,6"/>
+                                                         ToolTip="De" Margin="0,0,6,6"/>
 
                                             <DatePicker x:Name="DpInventoryTo" Width="120" 
-                                                         materialDesign:HintAssist.Hint="Até"/>
+                                                         ToolTip="Até"/>
                                         </WrapPanel>
                                     </StackPanel>
                                 </Border>
@@ -2969,7 +2969,7 @@
                                         <TextBlock Text="Filtrar Compras" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6" FontSize="13"/>
                                         <WrapPanel>
                                             <ComboBox x:Name="CmbPurchaseFilterStatus" Width="120"
-                                          materialDesign:HintAssist.Hint="Status"
+                                          ToolTip="Status"
                                           SelectedIndex="0" Margin="0,0,6,6">
                                                 <ComboBoxItem Content="Todos"/>
                                                 <ComboBoxItem Content="Pendentes"/>
@@ -2977,12 +2977,12 @@
                                                 <ComboBoxItem Content="Canceladas"/>
                                             </ComboBox>
                                             <ComboBox x:Name="CmbPurchaseFilterSupplier" Width="160"
-                                          materialDesign:HintAssist.Hint="Fornecedor"
+                                          ToolTip="Fornecedor"
                                           DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,6,6"/>
                                             <DatePicker x:Name="DpPurchaseFrom" Width="120"
-                                            materialDesign:HintAssist.Hint="De" Margin="0,0,6,6"/>
+                                            ToolTip="De" Margin="0,0,6,6"/>
                                             <DatePicker x:Name="DpPurchaseTo" Width="120"
-                                            materialDesign:HintAssist.Hint="Até"/>
+                                            ToolTip="Até"/>
                                         </WrapPanel>
                                     </StackPanel>
                                 </Border>
