@@ -71,6 +71,21 @@ namespace AyGestRest.Data
             modelBuilder.Entity<RestaurantConfig>(entity => entity.HasKey(e => e.Id));
             modelBuilder.Entity<ProductCategory>(entity => entity.HasKey(e => e.Id));
 
+            // Tabela de ligação entre produtos e ingredientes: cada combinação é única.
+            // A chave composta impede que o EF Core trate ProductIngredient como entidade sem chave.
+            modelBuilder.Entity<ProductIngredient>(entity =>
+            {
+                entity.HasKey(e => new { e.ProductId, e.IngredientId });
+                entity.HasOne(e => e.Product)
+                    .WithMany(p => p.ProductIngredients)
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Ingredient)
+                    .WithMany()
+                    .HasForeignKey(e => e.IngredientId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasIndex(e => e.Barcode);
